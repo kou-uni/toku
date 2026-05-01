@@ -1,0 +1,51 @@
+# Node
+node_modules/
+.next/
+dist/
+build/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Move / Sui
+move/build/
+move/.coverage_map.mvcov
+move/.trace
+*.coverage_map.mvcov
+.aptos/
+.sui/
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+secrets/
+**/private-key.json
+
+# OpenClaw local data
+.openclaw/
+openclaw.local.json
+
+# Claim app
+claim-app/.next/
+claim-app/.vercel/
+
+# x402 server
+x402-server/data/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Slides
+slides/*.pptx
+slides/.~lock*
