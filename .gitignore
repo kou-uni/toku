@@ -46,6 +46,8 @@ Thumbs.db
 *.swp
 *~
 
-# Slides
+# Slides — rendered output is a build artifact
 slides/*.pptx
 slides/.~lock*
+slides/*.html
+slides/*.pdf
