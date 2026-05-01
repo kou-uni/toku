@@ -97,3 +97,33 @@ public fun claim(
 
 public fun is_claimed(e: &GiftEscrow): bool { e.claimed }
 public fun sender(e: &GiftEscrow): address { e.sender }
+
+/// Claim with explicit recipient address. Used by the claim webpage when
+/// the recipient signs in via zkLogin (or, in MVP, when the agent signs
+/// on the recipient's behalf and routes the TOKU to a derived address).
+/// The claim code still gates the operation, so an attacker without the
+/// link cannot direct the TOKU to themselves.
+public fun claim_to(
+    escrow: &mut GiftEscrow,
+    presented_code_hash: vector<u8>,
+    recipient: address,
+    clock: &sui::clock::Clock,
+    ctx: &mut TxContext,
+) {
+    assert!(!escrow.claimed, EAlreadyClaimed);
+    assert!(escrow.claim_code_hash == presented_code_hash, ECodeMismatch);
+
+    escrow.claimed = true;
+    let amount = balance::value(&escrow.amount);
+    let coin = sui::coin::from_balance(balance::withdraw_all(&mut escrow.amount), ctx);
+
+    sui::event::emit(GiftClaimed {
+        escrow_id: object::id(escrow),
+        sender: escrow.sender,
+        recipient,
+        amount,
+        timestamp_ms: sui::clock::timestamp_ms(clock),
+    });
+
+    transfer::public_transfer(coin, recipient);
+}

@@ -1,0 +1,15 @@
+{
+  "name": "tsumu-claim-app",
+  "version": "0.1.0",
+  "description": "Pay-it-forward gift claim page for Tsumu. Mock zkLogin flow.",
+  "private": true,
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

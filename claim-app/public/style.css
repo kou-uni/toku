@@ -1,0 +1,238 @@
+/* Tsumu claim — minimal, calm, Japanese aesthetic */
+
+:root {
+  --ink: #1a1a1a;
+  --ink-soft: #555;
+  --ink-mute: #999;
+  --paper: #fafaf7;
+  --line: #e8e6df;
+  --gold: #b89657;
+  --green: #4a7c4f;
+  --google-blue: #4285f4;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+  line-height: 1.8;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 64px 32px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.logo {
+  font-size: 56px;
+  font-weight: 300;
+  letter-spacing: 0.12em;
+  color: var(--ink);
+  user-select: none;
+}
+
+.state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+.hidden { display: none !important; }
+
+.eyebrow {
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  color: var(--ink-mute);
+  text-transform: none;
+  margin: 0 0 16px;
+}
+
+.amount {
+  font-size: 48px;
+  font-weight: 300;
+  margin: 0 0 24px;
+  letter-spacing: 0.04em;
+}
+
+.amount-small {
+  font-size: 32px;
+  font-weight: 300;
+  color: var(--gold);
+  margin: 16px 0;
+}
+
+.from {
+  color: var(--ink-soft);
+  font-size: 14px;
+  margin: 0 0 32px;
+}
+
+blockquote {
+  border-left: 2px solid var(--line);
+  padding: 12px 24px;
+  margin: 32px 24px;
+  color: var(--ink-soft);
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.7;
+  text-align: left;
+}
+
+button.primary {
+  background: white;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  padding: 14px 32px;
+  font-size: 15px;
+  border-radius: 100px;
+  cursor: pointer;
+  margin: 24px auto 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+button.primary:hover {
+  border-color: var(--ink);
+  transform: translateY(-1px);
+}
+
+.g-icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--google-blue);
+  color: white;
+  text-align: center;
+  line-height: 24px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: -apple-system, sans-serif;
+}
+
+.fineprint {
+  color: var(--ink-mute);
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 24px auto;
+  max-width: 320px;
+}
+
+.muted {
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+.dim {
+  color: var(--ink-mute);
+  font-size: 13px;
+  margin: 8px 0;
+}
+
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--line);
+  border-top-color: var(--ink);
+  border-radius: 50%;
+  margin: 0 auto 24px;
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.check {
+  font-size: 48px;
+  color: var(--gold);
+  margin: 0 0 16px;
+  line-height: 1;
+}
+
+.error-mark {
+  font-size: 64px;
+  color: var(--ink-mute);
+  margin: 0 0 8px;
+  line-height: 1;
+}
+
+h2 {
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  font-size: 22px;
+  margin: 8px 0;
+}
+
+.message {
+  color: var(--ink-soft);
+  white-space: pre-line;
+  margin: 16px auto 32px;
+  max-width: 320px;
+}
+
+.receipt {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  margin: 32px auto;
+  padding: 16px 0;
+  max-width: 360px;
+  text-align: left;
+}
+
+.receipt .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 12px;
+}
+
+.receipt .key {
+  color: var(--ink-mute);
+}
+
+.receipt .val {
+  color: var(--ink);
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  text-decoration: none;
+}
+
+a.val {
+  color: var(--google-blue);
+}
+
+a.secondary {
+  color: var(--ink-soft);
+  font-size: 13px;
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+  padding: 4px 0;
+  display: inline-block;
+}
+
+a.secondary:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+}

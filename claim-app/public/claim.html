@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>Tsumu — 徳を受け取る</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main id="app">
+    <header>
+      <div class="logo">積</div>
+    </header>
+
+    <section id="loading" class="state">
+      <div class="spinner"></div>
+      <p class="muted">受け取り情報を確認しています…</p>
+    </section>
+
+    <section id="gift" class="state hidden">
+      <p class="eyebrow">徳が届いています</p>
+      <h1 class="amount" id="amount">— TOKU</h1>
+      <p class="from" id="from"></p>
+      <blockquote id="note" class="hidden"></blockquote>
+
+      <button id="claim-btn" class="primary">
+        <span class="g-icon">G</span>
+        Google で受け取る
+      </button>
+
+      <p class="fineprint">
+        ボタンを押すと、あなたのウォレットが自動的に作られます。
+        ブロックチェーンの操作は意識しなくて大丈夫です。
+      </p>
+    </section>
+
+    <section id="claiming" class="state hidden">
+      <div class="spinner"></div>
+      <p class="muted">受け取り中…</p>
+      <p class="dim">Sui のテストネットに記録しています。10秒ほどかかります。</p>
+    </section>
+
+    <section id="success" class="state hidden">
+      <div class="check">✦</div>
+      <h2>受け取りました</h2>
+      <p class="amount-small" id="success-amount"></p>
+      <p class="message" id="success-msg"></p>
+
+      <div class="receipt">
+        <div class="row">
+          <span class="key">あなたのウォレット</span>
+          <code class="val" id="recipient"></code>
+        </div>
+        <div class="row">
+          <span class="key">トランザクション</span>
+          <a class="val" id="tx-link" target="_blank" rel="noopener"></a>
+        </div>
+      </div>
+
+      <a class="secondary" id="open-explorer" target="_blank" rel="noopener">
+        Sui Explorer で見る →
+      </a>
+
+      <p class="fineprint" style="margin-top:32px">
+        Tsumu はあなたと共に歩きます。
+        Discord で「Tsumu」と話しかけてみてください。
+      </p>
+    </section>
+
+    <section id="error" class="state hidden">
+      <p class="error-mark">·</p>
+      <h2>受け取れませんでした</h2>
+      <p class="dim" id="error-detail"></p>
+    </section>
+
+    <section id="claimed" class="state hidden">
+      <p class="check muted">已</p>
+      <p>このギフトは、すでに誰かが受け取りました。</p>
+      <p class="dim">リンクは1度だけ有効です。</p>
+    </section>
+  </main>
+
+<script>
+const url = new URL(window.location.href);
+const segs = url.pathname.split("/");
+const escrowId = segs[segs.length - 1];
+const code = url.searchParams.get("code");
+
+function show(id) {
+  document.querySelectorAll(".state").forEach(s => s.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+}
+
+async function loadEscrow() {
+  try {
+    const r = await fetch("/api/escrow/" + encodeURIComponent(escrowId));
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}));
+      document.getElementById("error-detail").textContent =
+        j.detail || "ギフトが見つかりません。リンクをもう一度確認してください。";
+      show("error");
+      return;
+    }
+    const data = await r.json();
+    if (data.claimed) {
+      show("claimed");
+      return;
+    }
+    document.getElementById("amount").textContent =
+      data.amount_human.toFixed(1) + " TOKU";
+    document.getElementById("from").textContent =
+      "送り主: " + (data.sender_short || data.sender || "—");
+    if (data.note) {
+      const blockNote = document.getElementById("note");
+      blockNote.textContent = data.note;
+      blockNote.classList.remove("hidden");
+    }
+    show("gift");
+  } catch (e) {
+    document.getElementById("error-detail").textContent = e.message;
+    show("error");
+  }
+}
+
+document.getElementById("claim-btn").addEventListener("click", async () => {
+  show("claiming");
+  try {
+    const r = await fetch("/api/claim", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ escrow_id: escrowId, code }),
+    });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.detail || j.error || "claim failed");
+
+    const total = (j.amount_human || 0) + (j.recipient_first_receive_bonus_toku || 0);
+    document.getElementById("success-amount").textContent =
+      "+" + total.toFixed(1) + " TOKU";
+    document.getElementById("success-msg").textContent =
+      j.message_for_recipient || "あなたの最初の徳です。";
+    const recip = j.recipient || "";
+    const recipShort = recip.length > 16 ? recip.slice(0, 8) + "…" + recip.slice(-6) : recip;
+    document.getElementById("recipient").textContent = recipShort;
+    const txLink = document.getElementById("tx-link");
+    txLink.href = j.explorer_tx_url || "#";
+    txLink.textContent = (j.claim_tx || "").slice(0, 12) + "…";
+    document.getElementById("open-explorer").href = j.explorer_recipient_url || "#";
+    show("success");
+  } catch (e) {
+    document.getElementById("error-detail").textContent = e.message;
+    show("error");
+  }
+});
+
+loadEscrow();
+</script>
+</body>
+</html>
