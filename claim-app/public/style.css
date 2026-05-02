@@ -164,10 +164,58 @@ button.primary:hover {
 }
 
 .check {
-  font-size: 48px;
+  font-size: 64px;
   color: var(--gold);
   margin: 0 0 16px;
   line-height: 1;
+  display: inline-block;
+  position: relative;
+  animation: check-pop 0.7s cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
+}
+@keyframes check-pop {
+  0%   { transform: scale(0) rotate(-45deg); opacity: 0; }
+  70%  { transform: scale(1.4) rotate(8deg);  opacity: 1; }
+  100% { transform: scale(1) rotate(0);       opacity: 1; }
+}
+/* Three concentric gold ripples emanating from the check mark */
+.check::before,
+.check::after,
+#success-amount::before {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 60px; height: 60px;
+  margin: -30px 0 0 -30px;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  opacity: 0;
+  pointer-events: none;
+}
+.check::before { animation: ripple 1.6s ease-out 0.2s 2; }
+.check::after  { animation: ripple 1.6s ease-out 0.5s 2; }
+@keyframes ripple {
+  0%   { transform: scale(0.4); opacity: 0.7; }
+  100% { transform: scale(3.5); opacity: 0;   }
+}
+
+/* Background gold-burst flash, only when entering #success */
+#success.state:not(.hidden) {
+  animation: success-flash 1.2s ease-out;
+}
+@keyframes success-flash {
+  0%   { background: radial-gradient(circle at 50% 35%, rgba(184, 150, 87, 0.32) 0%, transparent 55%); }
+  100% { background: transparent; }
+}
+
+/* Amount scales up dramatically */
+.amount-small {
+  animation: amount-scale 0.9s cubic-bezier(0.18, 0.89, 0.32, 1.28) 0.3s both;
+  display: inline-block;
+}
+@keyframes amount-scale {
+  0%   { transform: scale(0.3); opacity: 0; }
+  60%  { transform: scale(1.18); opacity: 1; }
+  100% { transform: scale(1);   opacity: 1; }
 }
 
 .error-mark {

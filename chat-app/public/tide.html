@@ -96,6 +96,31 @@
     const fmtUSD = (n) => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const fmtNum = (n) => n.toLocaleString("ja-JP");
 
+    // Count-up animation for hero numbers — feels like the value is
+    // accruing rather than being printed.
+    function countUp(el, target, opts = {}) {
+      const { duration = 900, decimals = 0, prefix = "", suffix = "" } = opts;
+      const startTime = performance.now();
+      function step(now) {
+        const t = Math.min(1, (now - startTime) / duration);
+        const eased = 1 - Math.pow(1 - t, 3);
+        const v = target * eased;
+        el.textContent = prefix + (decimals > 0 ? v.toFixed(decimals) : Math.round(v).toString()) + suffix;
+        if (t < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    // Brief gold flash when a numeric element changes between loads.
+    function flashUpdate(el) {
+      if (!el) return;
+      el.classList.remove("flash-update");
+      void el.offsetWidth; // restart animation
+      el.classList.add("flash-update");
+    }
+    // Track previous values so we can detect changes on subsequent loads.
+    const prev = { pool: null, total: null, balance: null };
+
     function ago(ts) {
       const s = Math.max(0, Math.floor((Date.now() - ts) / 1000));
       if (s < 60) return s + "秒前";
@@ -125,13 +150,26 @@
       // Personal panel — only when API returned a `me` block.
       const meCard = document.getElementById("me-card");
       if (d.me) {
+        const wasHidden = meCard.hidden;
         meCard.hidden = false;
         const link = document.getElementById("me-addr-link");
         link.textContent = d.me.short;
         link.href = d.me.explorerUrl;
-        document.getElementById("me-balance").textContent =
-          d.me.balance_human === null ? "—" : d.me.balance_human.toFixed(1);
-        document.getElementById("me-total").textContent = d.me.total_contributions;
+        const balEl   = document.getElementById("me-balance");
+        const totalEl = document.getElementById("me-total");
+        if (wasHidden) {
+          // First reveal — animate balance + total from 0 upward
+          countUp(balEl,   d.me.balance_human ?? 0, { duration: 1100, decimals: 1 });
+          countUp(totalEl, d.me.total_contributions, { duration: 900 });
+        } else {
+          balEl.textContent   = d.me.balance_human === null ? "—" : d.me.balance_human.toFixed(1);
+          totalEl.textContent = d.me.total_contributions;
+          if (prev.balance !== null && Math.abs(d.me.balance_human - prev.balance) > 0.001) flashUpdate(balEl.parentElement);
+          if (prev.total   !== null && d.me.total_contributions !== prev.total)            flashUpdate(totalEl);
+        }
+        prev.balance = d.me.balance_human;
+        prev.total   = d.me.total_contributions;
+
         const c = d.me.counts || {};
         const parts = [];
         if (c.sessions) parts.push(`座 ${c.sessions}`);
@@ -146,7 +184,26 @@
         meCard.hidden = true;
       }
 
-      document.getElementById("pool-amount").firstChild.data = "$" + fmtUSD(d.pool_usdc) + " ";
+      // Pool amount: count up from 0 on first load, just flash on updates
+      const poolEl = document.getElementById("pool-amount");
+      if (prev.pool === null) {
+        // First render — animate from zero upward, very visible
+        const target = d.pool_usdc;
+        const start = performance.now();
+        const dur = 1200;
+        function tick(now) {
+          const t = Math.min(1, (now - start) / dur);
+          const eased = 1 - Math.pow(1 - t, 3);
+          poolEl.firstChild.data = "$" + fmtUSD(target * eased) + " ";
+          if (t < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      } else {
+        poolEl.firstChild.data = "$" + fmtUSD(d.pool_usdc) + " ";
+        if (Math.abs(d.pool_usdc - prev.pool) > 0.001) flashUpdate(poolEl);
+      }
+      prev.pool = d.pool_usdc;
+
       document.getElementById("pool-pct").textContent = d.progress_pct;
       document.getElementById("pool-target").textContent = fmtUSD(d.quarter_target_usdc);
       document.getElementById("pool-next").textContent = d.next_distribution_at;

@@ -173,6 +173,21 @@ function show(id) {
   document.getElementById(id).classList.remove("hidden");
 }
 
+// Animate a number from 0 → target with ease-out cubic. Used on the
+// big "+N TOKU" amount so the deposit feels like motion, not a print.
+function countUp(el, target, opts = {}) {
+  const { duration = 800, prefix = "", suffix = "", decimals = 0 } = opts;
+  const startTime = performance.now();
+  function step(now) {
+    const t = Math.min(1, (now - startTime) / duration);
+    const eased = 1 - Math.pow(1 - t, 3);
+    const v = target * eased;
+    el.textContent = prefix + v.toFixed(decimals) + suffix;
+    if (t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
 async function loadEscrow() {
   try {
     const r = await fetch("/api/escrow/" + encodeURIComponent(escrowId));
@@ -288,8 +303,15 @@ document.getElementById("claim-btn").addEventListener("click", async () => {
     recipientAddr = j.recipient || null;
 
     const total = (j.amount_human || 0) + (j.recipient_first_receive_bonus_toku || 0);
-    document.getElementById("success-amount").textContent =
-      "+" + total.toFixed(1) + " TOKU";
+    // Count-up animation on the big amount — feels like the TOKU is
+    // being deposited rather than just displayed.
+    const amountEl = document.getElementById("success-amount");
+    countUp(amountEl, total, {
+      duration: 900,
+      prefix: "+",
+      suffix: " TOKU",
+      decimals: 1,
+    });
     document.getElementById("success-msg").textContent =
       j.message_for_recipient || "あなたの最初の徳です。";
     const recip = j.recipient || "";
