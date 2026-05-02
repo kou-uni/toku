@@ -1,0 +1,388 @@
+/* Tsumu Tide — collective virtue → donation visualization */
+
+:root {
+  --ink: #1a1a1a;
+  --ink-soft: #555;
+  --ink-mute: #999;
+  --paper: #fafaf7;
+  --paper-warm: #fff8eb;
+  --line: #e8e6df;
+  --gold: #b89657;
+  --gold-soft: #d9c084;
+  --tide: #5b8db8;
+  --tide-soft: #cfdbe8;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(91,141,184,0.07), transparent 60%),
+    radial-gradient(ellipse at 80% 100%, rgba(184,150,87,0.05), transparent 60%),
+    var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+.tide-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 32px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(250,250,247,0.85);
+  backdrop-filter: blur(10px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.back {
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+}
+.back:hover { color: var(--ink); }
+
+.brand {
+  font-size: 14px;
+  letter-spacing: 0.3em;
+  color: var(--ink-mute);
+}
+
+.ticket-badge {
+  margin-left: auto;
+  padding: 4px 12px;
+  background: var(--paper-warm, #f4f2eb);
+  border: 1px solid var(--line, #e8e6df);
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--ink-mute, #888);
+  font-family: "SF Mono", monospace;
+}
+
+.tide-main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px 28px 96px;
+}
+
+/* Hero */
+.hero {
+  text-align: center;
+  margin: 32px 0 56px;
+}
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  color: var(--ink-mute);
+  text-transform: uppercase;
+  margin: 0 0 16px;
+}
+.hero h1 {
+  font-size: 36px;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  line-height: 1.5;
+  margin: 0 0 24px;
+}
+.lede {
+  color: var(--ink-soft);
+  font-size: 15px;
+  line-height: 2;
+  margin: 0;
+}
+
+/* Pool card */
+.pool-card {
+  background: linear-gradient(160deg, #fff 0%, var(--paper-warm) 100%);
+  border: 1px solid var(--gold-soft);
+  border-radius: 20px;
+  padding: 36px 32px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(184,150,87,0.10);
+  margin-bottom: 56px;
+}
+
+.pool-shimmer {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 30% -10%, rgba(184,150,87,0.20), transparent 55%),
+    radial-gradient(circle at 80% 110%, rgba(91,141,184,0.18), transparent 55%);
+  pointer-events: none;
+  animation: tideShimmer 8s ease-in-out infinite;
+}
+@keyframes tideShimmer {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.pool-label {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--ink-mute);
+  margin: 0 0 12px;
+  position: relative;
+}
+.pool-amount {
+  font-size: 56px;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  margin: 0 0 24px;
+  color: var(--ink);
+  position: relative;
+  font-variant-numeric: tabular-nums;
+}
+.pool-unit {
+  font-size: 18px;
+  color: var(--gold);
+  letter-spacing: 0.15em;
+  margin-left: 4px;
+}
+.pool-bar {
+  height: 4px;
+  background: var(--line);
+  border-radius: 100px;
+  overflow: hidden;
+  margin: 0 auto 16px;
+  max-width: 420px;
+  position: relative;
+}
+.pool-bar-fill {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--tide), var(--gold));
+  border-radius: 100px;
+  transition: width 1.6s cubic-bezier(.2,.8,.2,1);
+}
+.pool-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--ink-soft);
+  position: relative;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.pool-meta strong { color: var(--ink); font-weight: 500; }
+
+/* Generic block */
+.block {
+  margin-bottom: 56px;
+}
+.block h2 {
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  margin: 0 0 8px;
+  text-align: center;
+}
+.note.muted {
+  color: var(--ink-mute);
+  font-size: 12px;
+  text-align: center;
+  margin: 0 0 24px;
+}
+
+/* Contribution feed */
+.contrib-feed {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-top: 1px solid var(--line);
+}
+.contrib-row {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr auto auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--line);
+  font-size: 13px;
+}
+.contrib-skel {
+  color: var(--ink-mute);
+  text-align: center;
+  padding: 24px 0;
+  font-size: 13px;
+}
+.contrib-city {
+  color: var(--ink);
+  letter-spacing: 0.04em;
+}
+.contrib-label {
+  color: var(--ink-soft);
+}
+.contrib-amount {
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 12px;
+}
+.contrib-ago {
+  color: var(--ink-mute);
+  font-size: 11px;
+}
+.contrib-link {
+  color: var(--ink-mute);
+  text-decoration: none;
+  font-size: 14px;
+}
+.contrib-link:hover { color: var(--tide); }
+
+@media (max-width: 600px) {
+  .contrib-row {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 4px 12px;
+  }
+  .contrib-amount { grid-row: 2; }
+  .contrib-ago { grid-row: 2; text-align: right; }
+  .contrib-link { display: none; }
+}
+
+/* Candidates */
+.candidates {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+@media (max-width: 700px) {
+  .candidates { grid-template-columns: 1fr; }
+}
+.cand-card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px;
+  transition: all 0.2s ease;
+}
+.cand-card:hover {
+  border-color: var(--gold-soft);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+  transform: translateY(-2px);
+}
+.cand-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.cand-emoji { font-size: 22px; }
+.cand-card h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+.cand-blurb {
+  font-size: 12px;
+  color: var(--ink-soft);
+  line-height: 1.7;
+  margin: 0 0 14px;
+  min-height: 56px;
+}
+.cand-bar {
+  height: 3px;
+  background: var(--line);
+  border-radius: 100px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.cand-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-soft), var(--gold));
+  transition: width 1.2s ease;
+}
+.cand-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--ink-mute);
+  font-variant-numeric: tabular-nums;
+}
+
+.vote-fineprint {
+  text-align: center;
+  font-size: 11px;
+  color: var(--ink-mute);
+  margin: 16px 0 0;
+}
+
+/* Past */
+.past-list {
+  display: grid;
+  gap: 16px;
+}
+.past-card {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 20px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px 22px;
+  align-items: center;
+}
+.past-photo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--paper-warm), white);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+}
+.past-quarter {
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--ink-mute);
+  margin: 0 0 4px;
+}
+.past-amount {
+  font-size: 14px;
+  margin: 0 0 6px;
+  font-weight: 500;
+}
+.past-impact {
+  font-size: 13px;
+  color: var(--ink-soft);
+  font-style: italic;
+  margin: 0;
+}
+
+/* Footer */
+.tide-footer {
+  margin-top: 80px;
+  padding-top: 40px;
+  border-top: 1px solid var(--line);
+  text-align: center;
+}
+.creed {
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 2;
+  letter-spacing: 0.04em;
+  font-style: italic;
+}
+.fineprint {
+  font-size: 11px;
+  color: var(--ink-mute);
+  margin-top: 24px;
+}

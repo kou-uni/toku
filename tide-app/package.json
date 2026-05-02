@@ -1,0 +1,15 @@
+{
+  "name": "tsumu-tide",
+  "version": "0.1.0",
+  "description": "Tsumu Tide — collective virtue → quarterly donation visualization. Read-only viewer; OpenClaw deep-links here from agent flows.",
+  "private": true,
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
