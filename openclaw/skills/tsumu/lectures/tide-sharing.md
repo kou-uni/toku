@@ -13,7 +13,7 @@
 
 `tsumu_tide_share.sh` が発行するのは **Tide ページの URL** です。
 
-`https://tsumu-tide.vercel.app/?ticket=<id>`
+`https://tsumu-chat.vercel.app/tide?ticket=<id>`
 
 このページが見せるもの:
 - 今期、世界中のユーザーが積み上げた**集合の徳プール**(USDC 換算)
@@ -121,7 +121,7 @@ tools/tsumu_tide_share.sh [friend_hint] [context]
 8 文字の hex。**ページ側では検証していない**(誰でも作れる、どんな文字列でも 200 が返る)。
 今は cosmetic で、ヘッダに小さく `OpenClaw ticket: xxxxxxxx` と表示するだけ。
 
-将来的に集計したくなったら、ticket → friend マッピングを別 store に永続化、tide-app 側で `/api/ticket/:id` を生やす。今は不要。
+将来的に集計したくなったら、ticket → friend マッピングを別 store に永続化、chat-app 側で `/api/ticket/:id` を生やす。今は不要。
 
 ### ログ
 
@@ -150,7 +150,7 @@ Tide を渡すことは「徳の還流のオンランプ」を渡すことであ
 - `tools/tsumu_gift_create.sh` — 1 TOKU を on-chain でギフト
 - `SOUL.md` — 全体トーンの源。Tide でも一切ぶれない
 - `HEARTBEAT.md` — proactive Push の時間帯ルール
-- 公開 URL: `https://tsumu-tide.vercel.app/`(本番固定)
+- 公開 URL: `https://tsumu-chat.vercel.app/tide`(本番固定。tsumu-chat に Tide が同居している構成)
 
 ## 9. このファイルが組み込まれる時
 

@@ -10,6 +10,7 @@
   <header class="tide-header">
     <a href="/" class="back">← Tsumu に戻る</a>
     <span class="brand">積 / Tide</span>
+    <span class="ticket-badge" id="ticket-badge" hidden></span>
   </header>
 
   <main class="tide-main">
@@ -22,6 +23,25 @@
         誰かの灯火が、ほんの少しの USDC になる。<br>
         三月に一度、それが社会へ還る。
       </p>
+    </section>
+
+    <section class="me-card" id="me-card" hidden>
+      <div class="me-head">
+        <span class="me-label">あなた</span>
+        <a class="me-addr" id="me-addr-link" target="_blank" rel="noopener">—</a>
+      </div>
+      <div class="me-stats">
+        <div class="me-stat">
+          <div class="me-stat-num"><span id="me-balance">—</span> <span class="me-stat-unit">TOKU</span></div>
+          <div class="me-stat-label">いま、あなたの徳</div>
+        </div>
+        <div class="me-stat">
+          <div class="me-stat-num" id="me-total">—</div>
+          <div class="me-stat-label">直近の積み</div>
+        </div>
+      </div>
+      <p class="me-breakdown" id="me-breakdown"></p>
+      <p class="me-narrative">あなたの 3 分は、この景色の中に、確かに、あります。</p>
     </section>
 
     <section class="pool-card">
@@ -84,9 +104,47 @@
       return Math.floor(s / 86400) + "日前";
     }
 
+    // Ticket badge: deep-links from OpenClaw can include ?ticket=<id>.
+    (function showTicket() {
+      const t = new URLSearchParams(location.search).get("ticket");
+      if (!t) return;
+      const badge = document.getElementById("ticket-badge");
+      badge.hidden = false;
+      badge.textContent = "OpenClaw ticket: " + t.slice(0, 8) + (t.length > 8 ? "…" : "");
+    })();
+
     async function load() {
-      const r = await fetch("/api/tide/state");
+      const params = new URLSearchParams(location.search);
+      const qs = new URLSearchParams();
+      if (params.get("ticket")) qs.set("ticket", params.get("ticket"));
+      if (params.get("addr"))   qs.set("addr", params.get("addr"));
+      const url = "/api/tide/state" + (qs.toString() ? "?" + qs.toString() : "");
+      const r = await fetch(url);
       const d = await r.json();
+
+      // Personal panel — only when API returned a `me` block.
+      const meCard = document.getElementById("me-card");
+      if (d.me) {
+        meCard.hidden = false;
+        const link = document.getElementById("me-addr-link");
+        link.textContent = d.me.short;
+        link.href = d.me.explorerUrl;
+        document.getElementById("me-balance").textContent =
+          d.me.balance_human === null ? "—" : d.me.balance_human.toFixed(1);
+        document.getElementById("me-total").textContent = d.me.total_contributions;
+        const c = d.me.counts || {};
+        const parts = [];
+        if (c.sessions) parts.push(`座 ${c.sessions}`);
+        if (c.lanterns) parts.push(`灯火 ${c.lanterns}`);
+        if (c.gifts_sent) parts.push(`渡し ${c.gifts_sent}`);
+        if (c.gifts_received) parts.push(`受け取り ${c.gifts_received}`);
+        if (c.seeds) parts.push(`種 ${c.seeds}`);
+        document.getElementById("me-breakdown").textContent = parts.length
+          ? "(" + parts.join(" / ") + ")"
+          : "";
+      } else {
+        meCard.hidden = true;
+      }
 
       document.getElementById("pool-amount").firstChild.data = "$" + fmtUSD(d.pool_usdc) + " ";
       document.getElementById("pool-pct").textContent = d.progress_pct;

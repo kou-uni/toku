@@ -27,21 +27,22 @@
 └──────────────┬───────────────┘
                │ ④ 友達がクリック
                ▼
-┌──────────────────────────────────────────────┐
-│  https://tsumu-tide.vercel.app/?ticket=…&addr=… │
-│  ✅ 既に本番稼働、自動で動く                  │
-│   - 集合プールの可視化                         │
-│   - addr= があれば個人パネル(残高+積み)      │
-│   - ticket= があればヘッダにバッジ             │
-│   - on-chain データを Sui RPC から実取得      │
-└──────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────┐
+│  https://tsumu-chat.vercel.app/tide?ticket=…&addr=… │
+│  ✅ 既に本番稼働、自動で動く                         │
+│   - 集合プールの可視化                               │
+│   - addr= があれば個人パネル(残高+積み)            │
+│   - ticket= があればヘッダにバッジ                   │
+│   - on-chain データを Sui RPC から実取得            │
+│   - チャット (/) と同じ Vercel プロジェクトに同居   │
+└────────────────────────────────────────────────────┘
 ```
 
 ### ✅ 既に動いている(OpenClaw 不要)
 
 | 部品 | URL / 場所 | 状態 |
 |---|---|---|
-| Tide viewer サイト | https://tsumu-tide.vercel.app/ | 本番稼働、HTTPS、CDN |
+| Tide viewer ページ | https://tsumu-chat.vercel.app/tide | 本番稼働、HTTPS、tsumu-chat 同居 |
 | `?addr=` 個人化 | 同上 + `?addr=0x…` | ✅ 残高 + 直近 7 種の活動を表示 |
 | `?ticket=` バッジ | 同上 + `?ticket=…` | ✅ ヘッダに小さく表示 |
 | Sui RPC reads | バックエンド内部 | ✅ public RPC、5s キャッシュ |
@@ -149,7 +150,7 @@ Tsumu:   けんじさん。リンクをひとつ、出しますか?
 User:    うん、お願い
          (内部:guard 通過 → tide_share.sh + tide_guard.sh 実行)
 Tsumu:   できました。
-         https://tsumu-tide.vercel.app/?ticket=ab12cd34&addr=0x...
+         https://tsumu-chat.vercel.app/tide?ticket=ab12cd34&addr=0x...
 
          返事は、待たなくていいです。
 ```

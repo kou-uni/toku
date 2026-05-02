@@ -3,7 +3,7 @@
 #
 # Generates a one-shot ticket ID and the public Tide URL with that ticket
 # baked in. The URL is meant to be passed to a friend via the user's own
-# channel (DM, Discord, etc.) so they land on tsumu-tide.vercel.app and
+# channel (DM, Discord, etc.) so they land on tsumu-chat.vercel.app/tide and
 # see where the collective virtue is heading this quarter.
 #
 # This tool ONLY generates the link. The decision of when to offer it
@@ -27,13 +27,13 @@ source "$(dirname "${BASH_SOURCE[0]}")/_lib.sh"
 FRIEND="${1:-}"
 CONTEXT="${2:-}"
 
-TIDE_BASE_URL="${TIDE_BASE_URL:-https://tsumu-tide.vercel.app}"
+TIDE_BASE_URL="${TIDE_BASE_URL:-https://tsumu-chat.vercel.app/tide}"
 
 # 8-char lowercase hex ticket. Unique enough within a demo timeline; we
 # don't need crypto-strength here because the URL is shareable by design
 # and the receiving site doesn't gate on the ticket value.
 TICKET=$(uuidgen | tr -d '-' | head -c 8 | tr 'A-Z' 'a-z')
-URL="${TIDE_BASE_URL}/?ticket=${TICKET}"
+URL="${TIDE_BASE_URL}?ticket=${TICKET}"
 NOW_ISO=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 # Optional local log — append to a tickets file so the issuer side has

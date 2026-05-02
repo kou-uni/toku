@@ -26,6 +26,59 @@ export async function getTokuBalance(addr) {
   }
 }
 
+// --- per-address summary (used by /api/tide/state ?addr=) ---------------
+
+const SUI_ADDR_RE = /^0x[0-9a-f]{1,64}$/i;
+export function isValidSuiAddr(s) {
+  if (typeof s !== "string") return false;
+  const t = s.trim();
+  return SUI_ADDR_RE.test(t) && t.length <= 66;
+}
+function normaliseAddr(s) {
+  const t = s.trim().toLowerCase();
+  if (!t.startsWith("0x")) return null;
+  return "0x" + t.slice(2).padStart(64, "0");
+}
+
+// Build a "this person's footprint" view from the recent on-chain event
+// window. Counts events whose actor field (owner / author / sender /
+// recipient / original_author) matches the address, plus the live TOKU
+// balance via suix_getBalance. Read-only.
+export async function getActorSummary(rawAddr) {
+  if (!isValidSuiAddr(rawAddr)) return null;
+  const addr = normaliseAddr(rawAddr);
+
+  const events = await getRecentSuiEvents();
+  const involves = (e) => {
+    const d = e.data || {};
+    return [d.owner, d.author, d.recipient, d.sender, d.original_author]
+      .some((v) => typeof v === "string" && v.toLowerCase() === addr);
+  };
+  const mine = events.filter(involves);
+  const countsBy = (t) => mine.filter((e) => e.type === t).length;
+  const counts = {
+    sessions:        countsBy("SessionRecorded"),
+    lanterns:        countsBy("LanternSubmitted"),
+    gifts_sent:      countsBy("GiftCreated"),
+    gifts_received:  countsBy("GiftClaimed"),
+    seeds:           countsBy("SeedSealed"),
+    minted_to_me:    countsBy("TokuMinted"),
+  };
+
+  const balance_human = await getTokuBalance(addr);
+
+  return {
+    addr,
+    short: addr.slice(0, 6) + "…" + addr.slice(-4),
+    balance_human,
+    counts,
+    total_contributions:
+      counts.sessions + counts.lanterns + counts.gifts_sent,
+    seen_in_recent_window: mine.length,
+    explorerUrl: `https://suiscan.xyz/testnet/account/${addr}`,
+  };
+}
+
 export async function getPulseAndPool() {
   try {
     const [pulse, pool] = await Promise.all([

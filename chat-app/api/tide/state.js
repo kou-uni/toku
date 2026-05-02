@@ -1,7 +1,12 @@
 // Vercel Serverless: /api/tide/state
 // Tide page data — collective virtue → quarterly donation visualization.
 
-import { getPulseAndPool, getRecentSuiEvents } from "../_lib/sui-rpc.js";
+import {
+  getPulseAndPool,
+  getRecentSuiEvents,
+  getActorSummary,
+  isValidSuiAddr,
+} from "../_lib/sui-rpc.js";
 
 const TIDE_BASE_POOL_USDC = 187.42;
 const TIDE_USDC_PER_BEAT = 0.073;
@@ -56,8 +61,18 @@ function eventToContribution(e) {
   };
 }
 
-export default async function handler(_req, res) {
-  const [counters, events] = await Promise.all([getPulseAndPool(), getRecentSuiEvents()]);
+export default async function handler(req, res) {
+  // Optional ?addr=0x... — surface the visitor's TOKU balance + recent
+  // footprint at the top of the page. Invalid addrs are silently dropped.
+  const addrParam = req.query?.addr;
+  const ticketParam = req.query?.ticket;
+  const wantsMe = addrParam && isValidSuiAddr(addrParam);
+
+  const [counters, events, me] = await Promise.all([
+    getPulseAndPool(),
+    getRecentSuiEvents(),
+    wantsMe ? getActorSummary(addrParam) : Promise.resolve(null),
+  ]);
   const beats = Number(counters.worldPulseTotal || 0);
   const poolUsdc = Number((TIDE_BASE_POOL_USDC + beats * TIDE_USDC_PER_BEAT).toFixed(2));
   const progressPct = Math.min(100, Math.round((poolUsdc / TIDE_QUARTER_TARGET_USDC) * 100));
@@ -75,6 +90,8 @@ export default async function handler(_req, res) {
     days_left: daysLeft,
     voters_total: TIDE_VOTERS_TOTAL,
     contributions, candidates, past_distributions: TIDE_PAST,
+    me,                            // null when ?addr= absent or invalid
+    ticket: ticketParam || null,   // echoed for the badge
     note: "USDC 額はモック。集合徳プールの設計を見せるための可視化です。",
   });
 }
