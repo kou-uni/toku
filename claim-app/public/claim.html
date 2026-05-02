@@ -41,6 +41,19 @@
     </section>
 
     <section id="success" class="state hidden">
+      <!-- Top banner: realistic CTA right after claim -->
+      <div class="top-cta">
+        <div class="top-cta-row">
+          <div class="top-cta-text">
+            <strong>このまま Tsumu を、あなたの Discord に</strong>
+            <span class="muted">毎朝の3分、あなただけに声がかかる</span>
+          </div>
+          <button class="top-cta-btn" data-coming-soon="invite-self">
+            招き入れる →
+          </button>
+        </div>
+      </div>
+
       <div class="check">✦</div>
       <h2>受け取りました</h2>
       <p class="amount-small" id="success-amount"></p>
@@ -64,21 +77,25 @@
       <div class="next-step">
         <h3>次の一歩</h3>
         <p class="next-desc">
-          Tsumu と毎朝、3分だけ。<br>
-          静かに、続けてみませんか?
+          Tsumu を、あなたの場所へ。<br>
+          毎朝の 3分が、あなたのもとに来ます。
         </p>
         <button class="discord-btn" data-coming-soon="dm">
           <span class="discord-icon">💬</span>
-          <span class="btn-main">Discord で Tsumu と話す</span>
-          <span class="btn-sub">あなた専用の Heartbeat を受け取る</span>
+          <div>
+            <span class="btn-main">Tsumu を自分の Discord に招く</span>
+            <span class="btn-sub">DM で、毎朝 3分の声がかかる</span>
+          </div>
         </button>
         <button class="server-btn" data-coming-soon="server">
           <span class="server-icon">🪷</span>
-          <span class="btn-main">Tsumu のサーバに参加</span>
-          <span class="btn-sub">他の人の灯火が、ここに集まる</span>
+          <div>
+            <span class="btn-main">友達のサーバに Tsumu を呼ぶ</span>
+            <span class="btn-sub">輪になって、灯火を交わす</span>
+          </div>
         </button>
         <p class="fineprint">
-          まだ静かに、Tsumu はあなたを待っています。
+          Tsumu は、招かれたところに、静かに灯ります。
         </p>
       </div>
     </section>
@@ -169,15 +186,20 @@ const csBody = document.getElementById("cs-body");
 const csEmoji = document.getElementById("cs-emoji");
 
 const COMING_SOON_CONTENT = {
+  "invite-self": {
+    emoji: "🌸",
+    title: "Tsumu を、あなたの Discord に招き入れる",
+    body: "毎朝、あなただけに 3分の声がかかります。\n受け取った徳は、その対話の最初の一粒として、Sui の上で確かに残ります。\n\n招かれた Tsumu は、あなたのリズムを覚えて、静かに寄り添います。",
+  },
   dm: {
     emoji: "💬",
-    title: "Tsumu との直接対話、もうすぐ始まります",
-    body: "Discord 上で Tsumu があなただけに語りかけ、毎朝 3分の座を提案します。\n\n受け取った徳は、ここから先も Sui の上で確かに残ります。",
+    title: "Tsumu を、あなたの Discord に招く",
+    body: "Tsumu があなたの DM に常駐し、毎朝 3分の座を提案します。\n\n話しかけるのはあなた。Tsumu は、あなたの言葉に応じて、灯火を灯します。",
   },
   server: {
     emoji: "🪷",
-    title: "Tsumu の集いの場所、もうすぐ開きます",
-    body: "他の誰かの灯火が、あなたの朝を支えます。\nあなたの言葉が、見知らぬ誰かの夜を温めます。\n\nそうして Tsumu は、ひとりの 3分から、世界の鼓動になります。",
+    title: "あなたの友達のサーバに、Tsumu を呼ぶ",
+    body: "Tsumu はあなたのサーバの一員として迎え入れられます。\nあなたと友達が、それぞれの 3分を持ち寄り、灯火を交わす。\n\nそうして Tsumu は、ひとつの輪から、もうひとつの輪へと、招かれていきます。",
   },
 };
 

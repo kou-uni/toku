@@ -344,20 +344,10 @@ app.post("/api/tool/gift-create", async (req, res) => {
 // advances the conversation. The frontend calls /api/story/:beat.
 
 const STORY_BEATS = {
-  "day0-receive": {
-    label: "Day 0: 先輩からのギフトを受け取る",
+  "tsumu-self": {
+    label: "① 自分の中に、徳を積む(3分の座)",
     narrate: [
-      { role: "system", body: "(Day 0、夜) 先輩・健司から Discord 風のメッセージが届く" },
-      { role: "user", body: "(届いた1行)「これ、なんか向いてる気がする。1 TOKU あげたから受け取って」" },
-    ],
-    tool: "gift-create",
-    args: { amount: 1, note: "あかりへ ── 健司より" },
-    afterPrompt: "あかりは初めて、誰かから「徳」というものを受け取った。リンクを開く前の、ためらいと好奇心。",
-  },
-  "day1-morning": {
-    label: "Day 1 朝: 布団の中で 3分の座",
-    narrate: [
-      { role: "system", body: "(翌朝 6:55、布団の中) Tsumu の朝の声がけ" },
+      { role: "system", body: "(朝 6:55、布団の中) Tsumu の朝の声がけ" },
       { role: "assistant", body: "おはよう。今、心は何色?" },
       { role: "user", body: "重い" },
       { role: "assistant", body: "重い、を抱えたまま、3分だけ座ってみますか?\n起きなくていいです。布団の中で、目を開けたままでも。" },
@@ -365,47 +355,17 @@ const STORY_BEATS = {
     ],
     tool: "record-session",
     args: { duration: 180, colorBefore: "重い", colorAfter: "薄い水色", reflection: "布団の中、3分" },
-    afterPrompt: "心の色が動いた瞬間。世界の鼓動を伝える短い一言を返してください。",
+    afterPrompt: "3分の座が終わり、心の色が動いた。あなたの中に、最初の徳がひとつ積まれた——とだけ、静かに伝えてください。一言。",
   },
-  "day7-lantern": {
-    label: "Day 7 夜: 自分のひとことを灯火プールに流す",
+  "tsumu-share": {
+    label: "② 友達に紹介する(連鎖が始まる)",
     narrate: [
-      { role: "system", body: "(Day 7、夜)" },
-      { role: "assistant", body: "今日のひとこと、聞かせてください。何があってもなくても。" },
-      { role: "user", body: "描いてる時、私は呼吸している" },
-    ],
-    tool: "lantern-submit",
-    args: { text: "描いてる時、私は呼吸している" },
-    afterPrompt: "あかりの言葉を匿名の灯火として受け取った。誰かの朝に届く可能性を、優しく知らせてください。",
-  },
-  "day7-seed": {
-    label: "Day 7 夜: 未来の自分への種を残す",
-    narrate: [
-      { role: "system", body: "セッション終わり。未来の自分への種の問いかけ" },
-      { role: "assistant", body: "未来のあなたへ、ひとこと残しますか?" },
-      { role: "user", body: "今日の自分、完璧じゃなくていい" },
-    ],
-    tool: "seal-seed",
-    args: { message: "今日の自分、完璧じゃなくていい", seconds: 60 },
-    afterPrompt: "封印された言葉が、未来の自分を待っている。短く、温かく見送ってください。",
-  },
-  "day14-lantern-back": {
-    label: "Day 14: 自分の言葉が誰かを灯した",
-    narrate: [
-      { role: "system", body: "(Day 14、朝) 7日前に流したあかりの灯火が、誰かの朝に届いたという通知" },
-    ],
-    tool: null,
-    afterPrompt: "あかりに、こう伝えてください: 「7日前にあなたが流した言葉:『描いてる時、私は呼吸している』が、今朝、京都の誰かを灯しました。+1.5 TOKU。その人は、絵を描いてみようかと思ったそうです。」短く、感情を煽らず。",
-  },
-  "day30-passforward": {
-    label: "Day 30: 友達に 1 TOKU を渡す",
-    narrate: [
-      { role: "system", body: "(Day 30) 友達がメンタル落ちている。あかりが渡したいと言う" },
+      { role: "system", body: "(数日後) 友達がしんどそうにしている。受け取った徳のひとつぶを、渡したい" },
       { role: "user", body: "友達がしんどそう。何か渡せる?" },
     ],
     tool: "gift-create",
     args: { amount: 1, note: "しんどい時、座れる。1 TOKU 渡しとくね" },
-    afterPrompt: "claim URL ができた。あかりに静かに渡すように促してください。配布の連鎖が始まる、と一言だけ添えて。",
+    afterPrompt: "claim URL ができた。リンクを静かに渡すように促してください。「配布の連鎖が始まる」と一言だけ添えて。",
   },
 };
 
