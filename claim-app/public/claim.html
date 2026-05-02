@@ -41,7 +41,22 @@
     </section>
 
     <section id="success" class="state hidden">
-      <!-- Top banner: realistic CTA right after claim -->
+      <!-- HERO CTA: on-chain proof. The pitch hinges on judges believing
+           this really hit Sui — the explorer link is the punchline, so it
+           leads the screen, even before the emotional ✦ moment. -->
+      <a class="onchain-hero" id="open-explorer" target="_blank" rel="noopener">
+        <span class="onchain-hero-eyebrow">オンチェーンで確認</span>
+        <span class="onchain-hero-title">
+          <span class="onchain-hero-arrow">↗</span>
+          Sui Explorer
+        </span>
+        <span class="onchain-hero-tx">
+          TX <code id="tx-link-inline">—</code>
+        </span>
+        <span class="onchain-hero-note">この受領は、Sui Testnet に確かに記録されました。</span>
+      </a>
+
+      <!-- Discord onboarding banner — relevant but secondary to on-chain proof. -->
       <div class="top-cta">
         <div class="top-cta-row">
           <div class="top-cta-text">
@@ -58,20 +73,6 @@
       <h2>受け取りました</h2>
       <p class="amount-small" id="success-amount"></p>
       <p class="message" id="success-msg"></p>
-
-      <!-- HERO CTA: on-chain proof. Stands out because the entire pitch
-           depends on judges/audience trusting that this really hit Sui. -->
-      <a class="onchain-hero" id="open-explorer" target="_blank" rel="noopener">
-        <span class="onchain-hero-eyebrow">オンチェーンで確認</span>
-        <span class="onchain-hero-title">
-          <span class="onchain-hero-arrow">↗</span>
-          Sui Explorer
-        </span>
-        <span class="onchain-hero-tx">
-          TX <code id="tx-link-inline">—</code>
-        </span>
-        <span class="onchain-hero-note">この受領は、Sui Testnet に確かに記録されました。</span>
-      </a>
 
       <div class="receipt">
         <div class="row">
