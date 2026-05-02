@@ -411,6 +411,14 @@ Tsumu:
 
 <span class="muted">すべて Sui Testnet 上で稼働中。Package: 0xbb218662…</span>
 
+<br>
+
+<div style="text-align: center; margin-top: 24px;">
+
+**[→ 俯瞰図を開く(体験 × 所有 × 三輪)](architecture.html)**
+
+</div>
+
 ---
 
 # 設計の中心にある約束

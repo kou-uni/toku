@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Tsumu — 俯瞰</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
+    background: #fafafa;
+    margin: 0;
+    padding: 24px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  h1 {
+    color: #333;
+    font-weight: 300;
+    margin-bottom: 4px;
+    font-size: 28px;
+  }
+  .subtitle {
+    color: #888;
+    font-size: 16px;
+    margin-bottom: 24px;
+  }
+  .mermaid {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    width: 98vw;
+    max-width: 1800px;
+  }
+  .mermaid svg {
+    width: 100% !important;
+    height: auto !important;
+    max-width: none !important;
+  }
+  .mermaid .nodeLabel,
+  .mermaid .edgeLabel,
+  .mermaid .cluster-label {
+    font-size: 22px !important;
+    line-height: 1.5 !important;
+  }
+  .mermaid .edgeLabel {
+    font-size: 18px !important;
+  }
+</style>
+</head>
+<body>
+<h1>Tsumu — 俯瞰図</h1>
+<div class="subtitle">課題 → Tsumu → 体験(OpenClaw)× 所有(Sui)→ 集合徳の三輪</div>
+
+<div class="mermaid">
+flowchart TB
+    why["🌍 <b>課題(Why Now)</b><br/>AI が代わりに考える時代<br/>= 自分の輪郭が消える / Agent Fatigue"]
+
+    tsumu["⭐ <b>Tsumu</b> — 静寂のためのエージェント<br/>1 日 3 分の対話で『徳』を Sui に積む"]
+
+    subgraph stack["⚡ 二本柱 — 体験 × 所有 が揃って初めて成立"]
+        direction LR
+        oc["🧘 <b>OpenClaw が担う『体験』</b><br/>(対話・声・時間)<br/>━━━━━━━━━━━━━<br/>• Discord / LINE で日常に同居<br/>• Heartbeat で朝の能動的な声がけ<br/>• SOUL.md = 命令しないトーン<br/>• 対機説法エンジン(Skill × LLM)<br/>• Markdown ベースの記憶"]
+        sui["⛓️ <b>Sui が担う『所有』</b><br/>(永続・透明・移転可能)<br/>━━━━━━━━━━━━━<br/>• zkLogin: Google login で即ウォレット<br/>• Sponsored Tx: ガスを意識させない<br/>• Object-centric: 坐の庭・灯火・種<br/>&nbsp;&nbsp;&nbsp;が固有の意味を持つ<br/>• Decay 付 TOKU coin"]
+        oc <-.->|"ツール呼び出し<br/>= 対話が即オンチェーンに"| sui
+    end
+
+    subgraph rings["🪷 集合徳の三輪 — 個から社会へ価値が流れる"]
+        direction LR
+        r1["<b>個</b><br/>坐の庭<br/>(自分のため)"]
+        r2["<b>対</b><br/>灯火プール<br/>(二人のため)"]
+        r3["<b>集合</b><br/>Tide DAO 寄付<br/>(社会のため)"]
+        r1 -->|回向| r2 -->|Decay| r3
+    end
+
+    why ==>|"加速器を作った者は、ブレーキも作る"| tsumu
+    tsumu ==> stack
+    stack ==>|"日々のセッションが<br/>永続オブジェクトに結晶化"| rings
+
+    classDef whyC fill:#fce4ec,stroke:#880e4f,color:#560027
+    classDef coreC fill:#fff3e0,stroke:#e65100,color:#bf360c,stroke-width:3px
+    classDef ocC fill:#e3f2fd,stroke:#0d47a1,color:#0d47a1,stroke-width:2px
+    classDef suiC fill:#ede7f6,stroke:#311b92,color:#311b92,stroke-width:2px
+    classDef ringC fill:#f3e5f5,stroke:#4a148c,color:#311b92
+
+    class why whyC
+    class tsumu coreC
+    class oc ocC
+    class sui suiC
+    class rings,r1,r2,r3 ringC
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    securityLevel: 'loose',
+    themeVariables: {
+      fontSize: '22px',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif'
+    },
+    flowchart: {
+      nodeSpacing: 60,
+      rankSpacing: 90,
+      padding: 20,
+      useMaxWidth: false
+    }
+  });
+</script>
+</body>
+</html>
