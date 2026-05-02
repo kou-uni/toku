@@ -57,3 +57,4 @@ slides/*.pdf
 
 # macOS .webloc launchers — contain hardcoded absolute paths
 *.webloc
+.vercel
