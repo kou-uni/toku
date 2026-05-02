@@ -17,6 +17,8 @@ import { fileURLToPath } from "node:url";
 import {
   getPulseAndPool,
   getRecentSuiEvents,
+  getActorSummary,
+  isValidSuiAddr,
 } from "./lib/sui.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -134,8 +136,17 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/api/tide/state", async (req, res) => {
-  const counters = await getPulseAndPool();
-  const events = await getRecentSuiEvents();
+  // Optional ?addr=0x... — when present, surface the user's TOKU balance
+  // and recent contributions at the top of the page. Invalid addrs are
+  // ignored (the page just falls back to the global view).
+  const addrParam = req.query.addr;
+  const wantsMe = addrParam && isValidSuiAddr(addrParam);
+
+  const [counters, events, me] = await Promise.all([
+    getPulseAndPool(),
+    getRecentSuiEvents(),
+    wantsMe ? getActorSummary(addrParam) : Promise.resolve(null),
+  ]);
 
   const beats = Number(counters.worldPulseTotal || 0);
   const poolUsdc = Number(
@@ -171,6 +182,7 @@ app.get("/api/tide/state", async (req, res) => {
     candidates,
     past_distributions: TIDE_PAST,
     ticket: req.query.ticket || null,
+    me, // null when ?addr= absent or invalid
     note:
       "USDC 額はモック。集合徳プールの設計を見せるための可視化です。" +
       " on-chain 出来事から決定論的に生成されます。",

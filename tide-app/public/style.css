@@ -100,6 +100,78 @@ html, body {
   margin: 0;
 }
 
+/* Personal card (?addr=) — appears above the pool when the URL pins a user */
+.me-card {
+  margin: 0 0 32px;
+  padding: 24px 28px;
+  background: linear-gradient(160deg, #fff 0%, var(--paper-warm, #f4f2eb) 100%);
+  border: 1px solid var(--line, #e8e6df);
+  border-left: 3px solid var(--gold, #b89657);
+  border-radius: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+}
+.me-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 16px;
+}
+.me-label {
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: var(--ink-mute, #888);
+}
+.me-addr {
+  font-family: "SF Mono", monospace;
+  font-size: 12px;
+  color: var(--ink-mute, #888);
+  text-decoration: none;
+  letter-spacing: 0.05em;
+}
+.me-addr:hover { color: var(--gold, #b89657); }
+
+.me-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  padding: 8px 0 4px;
+}
+.me-stat-num {
+  font-size: 32px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  color: var(--ink, #1a1a1a);
+  line-height: 1.2;
+}
+.me-stat-unit {
+  font-size: 14px;
+  letter-spacing: 0.2em;
+  color: var(--gold, #b89657);
+  margin-left: 4px;
+}
+.me-stat-label {
+  margin-top: 4px;
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  color: var(--ink-mute, #888);
+}
+.me-breakdown {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--ink-mute, #888);
+  letter-spacing: 0.05em;
+}
+.me-breakdown:empty { display: none; }
+.me-narrative {
+  margin: 14px 0 0;
+  font-size: 14px;
+  color: var(--ink-soft, #555);
+  line-height: 1.7;
+  font-style: normal;
+  border-top: 1px dashed var(--line, #e8e6df);
+  padding-top: 12px;
+}
+
 /* Pool card */
 .pool-card {
   background: linear-gradient(160deg, #fff 0%, var(--paper-warm) 100%);

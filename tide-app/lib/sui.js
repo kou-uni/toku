@@ -50,6 +50,70 @@ export async function getPulseAndPool() {
   }
 }
 
+// --- per-address summary ---------------------------------------------------
+
+const SUI_ADDR_RE = /^0x[0-9a-f]{1,64}$/i;
+export function isValidSuiAddr(s) {
+  if (typeof s !== "string") return false;
+  // Accept either canonical 0x + 64 hex or shorter (we normalise below).
+  return SUI_ADDR_RE.test(s.trim()) && s.length <= 66;
+}
+function normaliseAddr(s) {
+  const t = s.trim().toLowerCase();
+  if (!t.startsWith("0x")) return null;
+  const body = t.slice(2);
+  return "0x" + body.padStart(64, "0");
+}
+
+export async function getActorSummary(rawAddr) {
+  if (!isValidSuiAddr(rawAddr)) return null;
+  const addr = normaliseAddr(rawAddr);
+
+  const events = await getRecentSuiEvents();
+
+  // An event "involves" addr if any actor field equals addr. Different
+  // event types use different field names; we check all of them.
+  const involves = (e) => {
+    const d = e.data || {};
+    return [d.owner, d.author, d.recipient, d.sender, d.original_author]
+      .some((v) => typeof v === "string" && v.toLowerCase() === addr);
+  };
+  const mine = events.filter(involves);
+
+  const countsBy = (t) => mine.filter((e) => e.type === t).length;
+  const counts = {
+    sessions: countsBy("SessionRecorded"),
+    lanterns: countsBy("LanternSubmitted"),
+    gifts_sent: countsBy("GiftCreated"),
+    gifts_received: countsBy("GiftClaimed"),
+    seeds: countsBy("SeedSealed"),
+    minted_to_me: countsBy("TokuMinted"),
+  };
+
+  let balance_human = null;
+  try {
+    const r = await suiRpc("suix_getBalance", [
+      addr,
+      `${PACKAGE_V1}::toku::TOKU`,
+    ]);
+    balance_human = Number(r?.totalBalance || 0) / 1e9;
+  } catch (_e) {
+    // Address unknown to the chain just leaves balance null.
+  }
+
+  return {
+    addr,
+    short: addr.slice(0, 6) + "…" + addr.slice(-4),
+    balance_human,
+    counts,
+    total_contributions: counts.sessions + counts.lanterns + counts.gifts_sent,
+    seen_in_recent_window: mine.length,
+    explorerUrl: `https://suiscan.xyz/testnet/account/${addr}`,
+  };
+}
+
+// ---------------------------------------------------------------------------
+
 const _eventCache = { ts: 0, data: null };
 
 export async function getRecentSuiEvents() {

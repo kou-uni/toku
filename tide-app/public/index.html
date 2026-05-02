@@ -25,6 +25,25 @@
       </p>
     </section>
 
+    <section class="me-card" id="me-card" hidden>
+      <div class="me-head">
+        <span class="me-label">あなた</span>
+        <a class="me-addr" id="me-addr-link" target="_blank" rel="noopener">—</a>
+      </div>
+      <div class="me-stats">
+        <div class="me-stat">
+          <div class="me-stat-num"><span id="me-balance">—</span> <span class="me-stat-unit">TOKU</span></div>
+          <div class="me-stat-label">いま、あなたの徳</div>
+        </div>
+        <div class="me-stat">
+          <div class="me-stat-num" id="me-total">—</div>
+          <div class="me-stat-label">直近の積み</div>
+        </div>
+      </div>
+      <p class="me-breakdown" id="me-breakdown"></p>
+      <p class="me-narrative">あなたの 3 分は、この景色の中に、確かに、あります。</p>
+    </section>
+
     <section class="pool-card">
       <div class="pool-shimmer"></div>
       <p class="pool-label">今期の集合プール</p>
@@ -96,10 +115,37 @@
     })();
 
     async function load() {
-      const ticket = new URLSearchParams(location.search).get("ticket") || "";
-      const url = "/api/tide/state" + (ticket ? "?ticket=" + encodeURIComponent(ticket) : "");
+      const params = new URLSearchParams(location.search);
+      const qs = new URLSearchParams();
+      if (params.get("ticket")) qs.set("ticket", params.get("ticket"));
+      if (params.get("addr"))   qs.set("addr", params.get("addr"));
+      const url = "/api/tide/state" + (qs.toString() ? "?" + qs.toString() : "");
       const r = await fetch(url);
       const d = await r.json();
+
+      // Personal panel — only when the API returned a `me` block.
+      const meCard = document.getElementById("me-card");
+      if (d.me) {
+        meCard.hidden = false;
+        const link = document.getElementById("me-addr-link");
+        link.textContent = d.me.short;
+        link.href = d.me.explorerUrl;
+        document.getElementById("me-balance").textContent =
+          d.me.balance_human === null ? "—" : d.me.balance_human.toFixed(1);
+        document.getElementById("me-total").textContent = d.me.total_contributions;
+        const c = d.me.counts || {};
+        const parts = [];
+        if (c.sessions) parts.push(`座 ${c.sessions}`);
+        if (c.lanterns) parts.push(`灯火 ${c.lanterns}`);
+        if (c.gifts_sent) parts.push(`渡し ${c.gifts_sent}`);
+        if (c.gifts_received) parts.push(`受け取り ${c.gifts_received}`);
+        if (c.seeds) parts.push(`種 ${c.seeds}`);
+        document.getElementById("me-breakdown").textContent = parts.length
+          ? "(" + parts.join(" / ") + ")"
+          : "";
+      } else {
+        meCard.hidden = true;
+      }
 
       document.getElementById("pool-amount").firstChild.data = "$" + fmtUSD(d.pool_usdc) + " ";
       document.getElementById("pool-pct").textContent = d.progress_pct;
