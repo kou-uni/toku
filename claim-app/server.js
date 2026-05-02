@@ -29,6 +29,11 @@ const TOOLS_DIR = process.env.TOOLS_DIR ||
 const DISCORD_BOT_DM = process.env.DISCORD_BOT_DM || "https://discord.com/users/1499905975220568186";
 const DISCORD_SERVER_INVITE = process.env.DISCORD_SERVER_INVITE || "https://discord.gg/tsumu-coming-soon";
 
+// Where the OpenClaw-side identity registry lives (chat-app for now).
+// On claim success we ask it for a one-time onboard_token; the user shows
+// it to the Tsumu bot in their first DM, which calls identity_bind.
+const TSUMU_CHAT_API = process.env.TSUMU_CHAT_API || "http://localhost:3100";
+
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
@@ -96,6 +101,23 @@ app.post("/api/claim", async (req, res) => {
     // Tool emits a single JSON line at the end (last line of stdout).
     const lastLine = stdout.trim().split("\n").pop();
     const result = JSON.parse(lastLine);
+
+    // Best-effort: fetch a one-time onboard token so the user can prove
+    // ownership of `recipient` to the Tsumu bot in their first DM. If the
+    // chat-app isn't running we just skip — the UI degrades to coming-soon.
+    let onboard_token = null;
+    try {
+      const r = await fetch(`${TSUMU_CHAT_API}/api/identity/onboard-token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sui_addr: recipient, claim_id: escrow_id }),
+        signal: AbortSignal.timeout(2000),
+      });
+      if (r.ok) onboard_token = (await r.json()).onboard_token;
+    } catch (e) {
+      console.warn("onboard token issue failed (non-fatal):", e.message);
+    }
+
     res.json({
       ...result,
       recipient,
@@ -103,6 +125,7 @@ app.post("/api/claim", async (req, res) => {
       explorer_tx_url: `https://suiscan.xyz/testnet/tx/${result.claim_tx}`,
       discord_invite: DISCORD_BOT_DM,
       server_invite: DISCORD_SERVER_INVITE,
+      onboard_token,
     });
   } catch (e) {
     console.error("claim failed:", e.message);

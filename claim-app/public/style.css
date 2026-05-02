@@ -506,6 +506,83 @@ dialog#coming-soon-modal::backdrop {
   position: relative;
 }
 
+/* Onboarding token block (inside invite-self modal) */
+.onboard-block {
+  background: linear-gradient(180deg, #fffaf0, #fff);
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 0 auto 20px;
+  max-width: 360px;
+  text-align: center;
+  position: relative;
+}
+
+.onboard-label {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--ink-mute);
+  margin: 0 0 10px;
+  text-transform: uppercase;
+}
+
+.onboard-token-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+}
+
+.onboard-token {
+  flex: 1;
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  text-align: left;
+  user-select: all;
+  word-break: break-all;
+}
+
+.onboard-copy {
+  flex-shrink: 0;
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: 0.05em;
+}
+.onboard-copy:hover { background: var(--gold); }
+
+.onboard-discord {
+  display: inline-block;
+  background: #5865f2;
+  color: white;
+  padding: 9px 18px;
+  border-radius: 100px;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  margin-bottom: 8px;
+  transition: transform 0.15s ease;
+}
+.onboard-discord:hover { transform: translateY(-1px); }
+
+.onboard-fineprint {
+  font-size: 11px;
+  color: var(--ink-mute);
+  margin: 6px 0 0;
+  font-style: italic;
+}
+
 .cs-fineprint {
   font-size: 11px;
   color: var(--ink-mute);

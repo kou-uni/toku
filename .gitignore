@@ -33,6 +33,9 @@ openclaw.local.json
 claim-app/.next/
 claim-app/.vercel/
 
+# Runtime data (identity registry, etc — runtime state, not source)
+chat-app/data/
+
 # x402 server
 x402-server/data/
 

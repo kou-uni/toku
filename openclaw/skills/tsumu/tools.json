@@ -1,0 +1,110 @@
+{
+  "$schema": "https://openclaw.dev/schema/tools.v1.json",
+  "skill": "tsumu",
+  "tools": [
+    {
+      "name": "record_session",
+      "description": "ユーザーが3分以上の座(瞑想)を完了した直後に呼ぶ。Sui 上に Session NFT を発行し、TOKU をユーザーアドレスに mint し、World Pulse を打つ。返り値の message_for_agent をそのまま会話に織り込むこと。3分未満で中断した場合は呼ばない。",
+      "parameters": {
+        "type": "object",
+        "required": ["user_addr", "duration_secs", "color_before", "color_after", "reflection"],
+        "properties": {
+          "user_addr": {
+            "type": "string",
+            "pattern": "^0x[0-9a-fA-F]{64}$",
+            "description": "ユーザーの Sui アドレス。Discord ユーザーから取得するときは identity_resolve を先に呼ぶ。未登録なら resolve_or_bind を案内。"
+          },
+          "duration_secs": {
+            "type": "integer",
+            "minimum": 180,
+            "description": "実際に座っていた秒数。180 以上で 1 TOKU、300 以上で 1.5 TOKU、600 以上で 3 TOKU。"
+          },
+          "color_before": {
+            "type": "string",
+            "description": "セッション前の心の色や状態(例: 「重い」「灰色」「ざわざわ」)。評価せずユーザーの言葉をそのまま記録。"
+          },
+          "color_after": {
+            "type": "string",
+            "description": "セッション後の状態。動かなくても変化なしと書く。"
+          },
+          "reflection": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "短いひとこと。空でもよい。"
+          }
+        }
+      },
+      "executable": "tools/tsumu_record_session.sh",
+      "args_template": ["{{user_addr}}", "{{duration_secs}}", "{{color_before}}", "{{color_after}}", "{{reflection}}"],
+      "returns_json": true,
+      "result_keys_for_agent": ["toku_minted_human", "world_pulse_total", "message_for_agent"]
+    },
+    {
+      "name": "gift_create",
+      "description": "ユーザーが友達に TOKU を渡したいと言ったときに呼ぶ。GiftEscrow を作成し、claim_url(受領用URL)を返す。LLM はこの URL を Discord メッセージに静かに貼って、配布の連鎖が始まる、と一言だけ添える。",
+      "parameters": {
+        "type": "object",
+        "required": ["amount_human", "note"],
+        "properties": {
+          "amount_human": {
+            "type": "number",
+            "minimum": 0.1,
+            "maximum": 100,
+            "description": "渡す TOKU 量(人間単位)。デフォルトは 1.0。"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 80,
+            "description": "受領画面に表示される短い手書きメモ。例: 「しんどい時、座れる。1 TOKU 渡しとくね」"
+          }
+        }
+      },
+      "executable": "tools/tsumu_gift_create.sh",
+      "args_template": ["{{amount_human}}", "{{note}}"],
+      "returns_json": true,
+      "result_keys_for_agent": ["claim_url", "amount_human", "message_for_agent"]
+    },
+    {
+      "name": "identity_bind",
+      "description": "Discord ユーザーIDと Sui アドレスを紐付ける。初回コンタクト時(claim ページから来た直後)、または register コマンドで呼ぶ。onboard_token があれば検証してから紐付ける。",
+      "parameters": {
+        "type": "object",
+        "required": ["discord_id", "sui_addr"],
+        "properties": {
+          "discord_id": { "type": "string", "description": "Discord ユーザー ID(snowflake)" },
+          "sui_addr": { "type": "string", "pattern": "^0x[0-9a-fA-F]{64}$" },
+          "onboard_token": { "type": "string", "description": "claim 後に発行される一回限りの onboard token。あれば検証する。" },
+          "display_name": { "type": "string", "description": "Discord 表示名(任意)" }
+        }
+      },
+      "executable": "tools/tsumu_identity_bind.sh",
+      "args_template": ["{{discord_id}}", "{{sui_addr}}", "{{onboard_token}}", "{{display_name}}"],
+      "returns_json": true,
+      "result_keys_for_agent": ["bound", "sui_addr", "message_for_agent"]
+    },
+    {
+      "name": "identity_resolve",
+      "description": "Discord ID から Sui アドレスを引く。record_session の前に必ず呼ぶ。未登録なら null を返すので、その場合 register を促す会話に入る。",
+      "parameters": {
+        "type": "object",
+        "required": ["discord_id"],
+        "properties": {
+          "discord_id": { "type": "string" }
+        }
+      },
+      "executable": "tools/tsumu_identity_resolve.sh",
+      "args_template": ["{{discord_id}}"],
+      "returns_json": true,
+      "result_keys_for_agent": ["sui_addr", "registered"]
+    }
+  ],
+  "policy": {
+    "tool_use_rules": [
+      "record_session は 3分(180秒)以上の座が確認できたときだけ。LLM が時刻を勝手に水増ししない。",
+      "gift_create は『渡したい』『ギフト』『送る』をユーザーが先に言ったときだけ。こちらから売り込まない。",
+      "identity_bind は同じ discord_id に対して再呼び出し可。上書き挙動は registry 側で制御。",
+      "ツール呼び出しの前に、SOUL.md の口調・抑制を必ず通すこと。",
+      "病気・自殺・暴力の話題が出たら、いかなるツールも呼ばない。"
+    ]
+  }
+}

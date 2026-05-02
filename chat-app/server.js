@@ -11,8 +11,9 @@ import OpenAI from "openai";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import path from "node:path";
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import crypto from "node:crypto";
 
 const exec = promisify(execFile);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -424,6 +425,96 @@ app.post("/api/story/:beat", async (req, res) => {
 
   res.json({ beat: req.params.beat, toolResult, followUp });
 });
+
+// ===== Identity registry: Discord ↔ Sui =====
+//
+// Bridges the claim-app onboarding moment ("招き入れる") with the
+// OpenClaw Discord agent: when a user claims TOKU on the web and then
+// joins the Tsumu bot in Discord, OpenClaw resolves their Discord ID
+// to the Sui address that holds their virtue.
+//
+// Storage: data/identity.json (file-backed, survives restart).
+// Onboard tokens are one-time, expire after 1h.
+
+const DATA_DIR = path.join(__dirname, "data");
+const IDENTITY_PATH = path.join(DATA_DIR, "identity.json");
+
+await mkdir(DATA_DIR, { recursive: true });
+
+async function loadIdentity() {
+  try {
+    return JSON.parse(await readFile(IDENTITY_PATH, "utf-8"));
+  } catch {
+    return { by_discord: {}, by_sui: {}, onboard_tokens: {} };
+  }
+}
+
+async function saveIdentity(state) {
+  await writeFile(IDENTITY_PATH, JSON.stringify(state, null, 2));
+}
+
+// Migrate legacy `{}` shape on first read
+async function getIdentity() {
+  const s = await loadIdentity();
+  if (!s.by_discord) Object.assign(s, { by_discord: {}, by_sui: {}, onboard_tokens: {} });
+  return s;
+}
+
+// Issue a one-time onboard token (called by claim-app on successful claim)
+app.post("/api/identity/onboard-token", async (req, res) => {
+  const { sui_addr, claim_id } = req.body || {};
+  if (!sui_addr) return res.status(400).json({ error: "sui_addr required" });
+  const state = await getIdentity();
+  const token = crypto.randomBytes(16).toString("hex");
+  state.onboard_tokens[token] = {
+    sui_addr,
+    claim_id: claim_id || null,
+    issued_at: Date.now(),
+    expires_at: Date.now() + 60 * 60 * 1000,
+  };
+  await saveIdentity(state);
+  res.json({ onboard_token: token, expires_in: 3600 });
+});
+
+// Bind a Discord ID to a Sui address. If onboard_token is present, validate
+// it matches the sui_addr and burn it.
+app.post("/api/identity/bind", async (req, res) => {
+  const { discord_id, sui_addr, onboard_token, display_name } = req.body || {};
+  if (!discord_id || !sui_addr) {
+    return res.status(400).json({ error: "discord_id and sui_addr required" });
+  }
+  const state = await getIdentity();
+
+  if (onboard_token) {
+    const t = state.onboard_tokens[onboard_token];
+    if (!t) return res.status(403).json({ error: "invalid onboard_token" });
+    if (Date.now() > t.expires_at) return res.status(403).json({ error: "onboard_token expired" });
+    if (t.sui_addr !== sui_addr) return res.status(403).json({ error: "sui_addr mismatch" });
+    delete state.onboard_tokens[onboard_token];
+  }
+
+  state.by_discord[discord_id] = { sui_addr, display_name: display_name || null, bound_at: Date.now() };
+  state.by_sui[sui_addr] = { discord_id, display_name: display_name || null };
+  await saveIdentity(state);
+  res.json({ bound: true, discord_id, sui_addr, message_for_agent: "Discord と Sui を結びました。これからは、あなたの徳として積まれます。" });
+});
+
+// Resolve Discord ID -> Sui address (called by record_session preflight)
+app.get("/api/identity/by-discord/:id", async (req, res) => {
+  const state = await getIdentity();
+  const entry = state.by_discord[req.params.id];
+  res.json({ registered: !!entry, sui_addr: entry?.sui_addr || null, display_name: entry?.display_name || null });
+});
+
+// Reverse lookup
+app.get("/api/identity/by-sui/:addr", async (req, res) => {
+  const state = await getIdentity();
+  const entry = state.by_sui[req.params.addr];
+  res.json({ registered: !!entry, discord_id: entry?.discord_id || null });
+});
+
+// Healthz
+app.get("/healthz", (_req, res) => res.json({ ok: true }));
 
 app.listen(PORT, () => {
   console.log(`Tsumu chat at http://localhost:${PORT}/`);

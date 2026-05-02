@@ -107,6 +107,22 @@
         <div class="cs-emoji" id="cs-emoji">🌸</div>
         <h2 id="cs-title">もうすぐ会えます</h2>
         <p id="cs-body" class="cs-body"></p>
+
+        <!-- Onboarding token: shown only on the invite-self modal -->
+        <div id="onboard-block" class="onboard-block hidden">
+          <p class="onboard-label">Tsumu に最初に送る合言葉</p>
+          <div class="onboard-token-row">
+            <code id="onboard-token" class="onboard-token"></code>
+            <button id="onboard-copy" class="onboard-copy" type="button">コピー</button>
+          </div>
+          <a id="onboard-discord" class="onboard-discord" target="_blank" rel="noopener">
+            Discord で Tsumu を開く →
+          </a>
+          <p class="onboard-fineprint">
+            合言葉は1時間有効。Tsumu があなたの徳と Discord を結びます。
+          </p>
+        </div>
+
         <div class="cs-meta">
           <div class="cs-row">
             <span class="cs-label">バージョン</span>
@@ -203,6 +219,16 @@ const COMING_SOON_CONTENT = {
   },
 };
 
+// Holds the one-time onboard token issued by the chat-app/identity registry
+// after a successful claim. Used by the "招き入れる" modal so the user can
+// prove ownership of their just-claimed Sui address to the Tsumu bot.
+let onboardToken = null;
+let recipientAddr = null;
+const onboardBlock = document.getElementById("onboard-block");
+const onboardTokenEl = document.getElementById("onboard-token");
+const onboardCopy = document.getElementById("onboard-copy");
+const onboardDiscord = document.getElementById("onboard-discord");
+
 document.querySelectorAll("[data-coming-soon]").forEach((btn) => {
   btn.addEventListener("click", () => {
     const kind = btn.dataset.comingSoon;
@@ -210,8 +236,30 @@ document.querySelectorAll("[data-coming-soon]").forEach((btn) => {
     csEmoji.textContent = c.emoji;
     csTitle.textContent = c.title;
     csBody.textContent = c.body;
+
+    // Only the invite-self modal carries the onboarding token + discord link
+    if (kind === "invite-self" && onboardToken) {
+      onboardTokenEl.textContent = onboardToken;
+      const discordUrl = `https://discord.com/users/1499905975220568186?tsumu_token=${onboardToken}`;
+      onboardDiscord.href = discordUrl;
+      onboardBlock.classList.remove("hidden");
+    } else {
+      onboardBlock.classList.add("hidden");
+    }
+
     csModal.showModal();
   });
+});
+
+onboardCopy.addEventListener("click", async () => {
+  if (!onboardToken) return;
+  try {
+    await navigator.clipboard.writeText(onboardToken);
+    onboardCopy.textContent = "コピーしました";
+    setTimeout(() => (onboardCopy.textContent = "コピー"), 1600);
+  } catch {
+    onboardCopy.textContent = "コピー失敗";
+  }
 });
 
 document.getElementById("cs-close").addEventListener("click", () => csModal.close());
@@ -226,6 +274,9 @@ document.getElementById("claim-btn").addEventListener("click", async () => {
     });
     const j = await r.json();
     if (!r.ok) throw new Error(j.detail || j.error || "claim failed");
+
+    onboardToken = j.onboard_token || null;
+    recipientAddr = j.recipient || null;
 
     const total = (j.amount_human || 0) + (j.recipient_first_receive_bonus_toku || 0);
     document.getElementById("success-amount").textContent =
