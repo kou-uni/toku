@@ -36,7 +36,7 @@ TOKU_AMOUNT=$(to_atomic 0.5)
 MINT_TX=$(sui client call \
     --package "$TSUMU_PACKAGE_ID" \
     --module toku --function mint_to \
-    --args "$TSUMU_MINT_AUTHORITY_ID" "$TOKU_AMOUNT" "$USER_ADDR" "lantern_submit" "$SUI_CLOCK_ID" \
+    --args "$TSUMU_MINT_AUTHORITY_ID" "$TOKU_AMOUNT" "$USER_ADDR" "灯火を流した: $(echo "$TEXT" | head -c 30)" "$SUI_CLOCK_ID" \
     --gas-budget "$GAS_BUDGET" --json | python3 -c 'import sys,json; print(json.load(sys.stdin).get("digest",""))')
 
 SUBMIT_TX="$TX" MINT_TX="$MINT_TX" POOL_SIZE="$POOL_SIZE" \

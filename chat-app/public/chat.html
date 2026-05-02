@@ -32,6 +32,12 @@
         <button id="refresh-state" class="ghost-small">↻ 更新</button>
       </section>
 
+      <section class="hero-action">
+        <h2>🎁 友達に Tsumu を渡す</h2>
+        <p class="hero-desc">あなたが渡すと、相手にも徳が届く。<br>受けた人がまた渡す。<br><strong>こうして、Tsumu は静かに広がる。</strong></p>
+        <button id="hero-gift" class="hero-btn">ギフトリンクを作る</button>
+      </section>
+
       <section class="story">
         <h2>あかりの30日(進行)</h2>
         <div id="story-buttons"></div>
@@ -191,6 +197,58 @@ document.getElementById("refresh-state").addEventListener("click", refreshCounte
 // auto-refresh every 30s
 setInterval(refreshCounters, 30000);
 
+// Hero gift action
+document.getElementById("hero-gift").addEventListener("click", () => {
+  const action = "gift-create";
+  const config = ACTIONS[action];
+  currentAction = action;
+  modalTitle.textContent = "🎁 友達に渡す";
+  modalDesc.textContent = "あなたから始まる連鎖。受け取った人がまた誰かに渡せます。";
+  modalFields.innerHTML = "";
+  for (const f of config.fields) {
+    const wrap = document.createElement("label");
+    wrap.className = "field";
+    const span = document.createElement("span");
+    span.textContent = f.label;
+    const inp = document.createElement("input");
+    inp.name = f.name;
+    inp.type = f.type;
+    inp.value = f.value;
+    if (f.step) inp.step = f.step;
+    wrap.appendChild(span);
+    wrap.appendChild(inp);
+    modalFields.appendChild(wrap);
+  }
+  modal.showModal();
+});
+
+// Render gift card with copy + Sui Explorer
+function renderGiftCard(toolResult) {
+  const card = document.createElement("div");
+  card.className = "gift-card";
+  card.innerHTML = `
+    <div class="gift-card-head">
+      <span class="gift-icon">🎁</span>
+      <strong>ギフトリンクができました</strong>
+    </div>
+    <div class="gift-card-amount">${(toolResult.amount_human || 1).toFixed(1)} TOKU</div>
+    <div class="gift-card-url" id="gift-url-${toolResult.escrow_id?.slice(-6) || Math.random().toString(36).slice(-4)}">${toolResult.claim_url}</div>
+    <div class="gift-card-actions">
+      <button class="copy-btn">📋 リンクをコピー</button>
+      <a class="open-btn" href="${toolResult.claim_url}" target="_blank" rel="noopener">受領画面を開く →</a>
+    </div>
+    <p class="gift-card-narrative">受け取った人が <strong>また誰かに渡す</strong>。<br>こうして Tsumu は静かに広がる。</p>
+  `;
+  chat.lastChild.appendChild(card);
+  const copyBtn = card.querySelector(".copy-btn");
+  const urlDiv = card.querySelector(".gift-card-url");
+  copyBtn.addEventListener("click", () => {
+    navigator.clipboard.writeText(urlDiv.textContent);
+    copyBtn.textContent = "✓ コピーしました";
+    setTimeout(() => { copyBtn.textContent = "📋 リンクをコピー"; }, 2000);
+  });
+}
+
 // Story progression
 async function loadStoryButtons() {
   const r = await fetch("/api/story/list");
@@ -221,12 +279,7 @@ async function loadStoryButtons() {
         }
         if (j.toolResult) {
           if (j.toolResult.claim_url) {
-            const a = document.createElement("a");
-            a.href = j.toolResult.claim_url;
-            a.target = "_blank";
-            a.textContent = "🎁 " + j.toolResult.claim_url;
-            a.className = "claim-link";
-            chat.lastChild.appendChild(a);
+            renderGiftCard(j.toolResult);
           }
           const txKey = j.toolResult.mint_tx || j.toolResult.session_tx || j.toolResult.gift_tx || j.toolResult.submit_tx || j.toolResult.seal_tx;
           if (txKey) {
@@ -481,12 +534,7 @@ modalForm.addEventListener("submit", async (e) => {
 
     // surface a clickable link if claim_url present
     if (j.claim_url) {
-      const a = document.createElement("a");
-      a.href = j.claim_url;
-      a.target = "_blank";
-      a.textContent = j.claim_url;
-      a.className = "claim-link";
-      chat.lastChild.appendChild(a);
+      renderGiftCard(j);
     }
     if (j.mint_tx) {
       const a = document.createElement("a");

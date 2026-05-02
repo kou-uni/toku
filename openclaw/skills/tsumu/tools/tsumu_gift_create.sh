@@ -28,7 +28,7 @@ CLAIM_BASE_URL="${CLAIM_BASE_URL:-http://localhost:3000}"
 MINT_OUT=$(sui client call \
     --package "$TSUMU_PACKAGE_ID" \
     --module toku --function mint_to \
-    --args "$TSUMU_MINT_AUTHORITY_ID" "$AMOUNT_ATOMIC" "$TSUMU_AGENT_ADDR" "for_gift" "$SUI_CLOCK_ID" \
+    --args "$TSUMU_MINT_AUTHORITY_ID" "$AMOUNT_ATOMIC" "$TSUMU_AGENT_ADDR" "ギフト発行: ${NOTE}" "$SUI_CLOCK_ID" \
     --gas-budget "$GAS_BUDGET" --json)
 
 COIN_ID=$(echo "$MINT_OUT" | python3 -c '

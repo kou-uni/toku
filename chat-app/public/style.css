@@ -646,3 +646,144 @@ dialog#modal::backdrop {
   #app { grid-template-columns: 220px 1fr; }
   #sui-panel { display: none; }
 }
+
+/* Hero gift action (left sidebar) */
+.hero-action {
+  background: linear-gradient(135deg, #fff 0%, #fff8e8 100%);
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+  padding: 18px 16px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.hero-action h2 {
+  border-bottom: none;
+  text-align: center;
+  text-transform: none;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  font-size: 14px;
+  margin: 0 0 8px;
+  padding-bottom: 0;
+}
+
+.hero-desc {
+  font-size: 11px;
+  color: var(--ink-soft);
+  line-height: 1.7;
+  margin: 0 0 12px;
+  letter-spacing: 0.02em;
+}
+
+.hero-desc strong {
+  color: var(--gold);
+  font-weight: 500;
+}
+
+.hero-btn {
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  padding: 10px 16px;
+  border-radius: 100px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  width: 100%;
+  font-weight: 500;
+  transition: transform 0.15s;
+}
+.hero-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(184,150,87,0.3);
+}
+
+/* Gift card in chat */
+.gift-card {
+  margin-top: 16px;
+  background: linear-gradient(135deg, #fff 0%, #fff8e8 100%);
+  border: 2px solid var(--gold);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(184,150,87,0.15);
+}
+
+.gift-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.gift-icon { font-size: 24px; }
+
+.gift-card-head strong {
+  font-size: 14px;
+  color: var(--gold);
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+.gift-card-amount {
+  font-size: 32px;
+  font-weight: 200;
+  color: var(--ink);
+  margin: 8px 0 12px;
+  letter-spacing: 0.05em;
+}
+
+.gift-card-url {
+  font-family: "SF Mono", Menlo, monospace;
+  font-size: 11px;
+  color: var(--ink-soft);
+  background: white;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  word-break: break-all;
+  margin-bottom: 12px;
+  max-height: 100px;
+  overflow-y: auto;
+}
+
+.gift-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.copy-btn,
+.open-btn {
+  flex: 1;
+  background: white;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  padding: 8px 14px;
+  border-radius: 100px;
+  font-family: inherit;
+  font-size: 12px;
+  text-align: center;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+.copy-btn:hover, .open-btn:hover {
+  border-color: var(--gold);
+  background: var(--paper-warm);
+}
+
+.gift-card-narrative {
+  font-size: 12px;
+  color: var(--ink-soft);
+  text-align: center;
+  margin: 0;
+  line-height: 1.7;
+  font-style: italic;
+}
+
+.gift-card-narrative strong {
+  color: var(--gold);
+  font-style: normal;
+  font-weight: 500;
+}

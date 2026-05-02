@@ -31,7 +31,7 @@ else
     TOKU_AMOUNT=$(to_atomic 1)
 fi
 
-REASON="session_${DURATION}s"
+REASON="座 ${DURATION}秒: ${COLOR_BEFORE} → ${COLOR_AFTER}"
 
 # 1) record session
 SESSION_TX=$(sui client call \
