@@ -11,14 +11,14 @@ collective practice.
 
 ## What this skill does
 
-- Guides a 3-minute meditation via short Telegram messages, with a `1-minute`
+- Guides a 3-minute meditation via short Discord messages, with a `1-minute`
   cadence of brief prompts (≤ 15 chars each).
 - Records the completed session as a Sui object (Session NFT, Garden touch,
   TOKU mint, World Pulse beat) via shell tools in `tools/`.
 - Lets the user seal a short message to their future self (TimeLock seed,
   unlocks 7 days later for double TOKU).
 - Lets the user submit a reflection to the global Lantern pool, or buy a
-  lantern card via the x402-compat endpoint.
+  lantern card via the mock payment endpoint.
 - Lets the user gift TOKU to a friend (creates a GiftEscrow + a claim link).
 
 ## Key triggers
@@ -47,7 +47,7 @@ collective practice.
 Located in `tools/` (shell wrappers around `sui client` and `curl`):
 
 - `tsumu_record.sh` — record session, mint TOKU, beat pulse
-- `tsumu_lantern_buy.sh` — x402 dance, returns a stranger's reflection
+- `tsumu_lantern_buy.sh` — mock payment, returns a stranger's reflection
 - `tsumu_lantern_submit.sh` — submit a reflection to the pool
 - `tsumu_seal_seed.sh` — seal a future-self message
 - `tsumu_open_seed.sh` — open a ripe seed

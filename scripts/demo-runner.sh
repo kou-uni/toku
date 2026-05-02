@@ -11,7 +11,7 @@
 
 set -euo pipefail
 
-export PATH="$HOME/tools/node-v24.15.0-darwin-arm64/bin:$HOME/tools/sui-testnet-v1.71.0:$PATH"
+export PATH="$HOME/tools/node-v22.22.2-darwin-arm64/bin:$HOME/tools/sui-testnet-v1.71.0:$PATH"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -35,29 +35,20 @@ step() {
 }
 
 # --- 0. Preflight ---
-step "Preflight" "Verify x402 server, claim app, and Sui wallet."
+step "Preflight" "Verify claim app and Sui wallet."
 
-if ! curl -sf http://localhost:4402/ > /dev/null; then
-    echo "ERROR: x402 server not running on :4402. Run: cd x402-server && node src/index.js" >&2
-    exit 1
-fi
 if ! curl -sf http://localhost:3000/healthz > /dev/null; then
     echo "ERROR: claim app not running on :3000. Run: cd claim-app && node server.js" >&2
     exit 1
 fi
-muted "x402 ✓  claim app ✓  sui address: ${TSUMU_AGENT_ADDR:0:10}..."
+muted "claim app ✓  sui address: ${TSUMU_AGENT_ADDR:0:10}..."
 
 # --- 1. Day 1: 朝の3分 ---
 step "Day 1: 朝の3分" "session NFT + TOKU mint + world pulse beat"
 RECORD_OUT=$("$TOOLS/tsumu_record_session.sh" "$USER_ADDR" 180 "重い" "薄い水色" "デモのテスト座")
 echo "$RECORD_OUT" | python3 -m json.tool
 
-# --- 2. Day 3: 灯火を受け取る (x402) ---
-step "Day 3: 灯火を受け取る" "x402 / AP2 dance — 0.05 USDC で誰かの言葉が届く"
-LANTERN_OUT=$("$TOOLS/tsumu_lantern_buy.sh" "$USER_ADDR")
-echo "$LANTERN_OUT" | python3 -m json.tool
-
-# --- 3. Day 7: 自分も灯火を流す ---
+# --- 2. Day 7: 自分も灯火を流す ---
 step "Day 7: 灯火を流す" "reflection を匿名でプールに投稿、+0.5 TOKU 還元"
 SUBMIT_OUT=$("$TOOLS/tsumu_lantern_submit.sh" "$USER_ADDR" "描いてる時、私は呼吸している")
 echo "$SUBMIT_OUT" | python3 -m json.tool

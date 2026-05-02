@@ -9,7 +9,7 @@
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│  ユーザー (Telegram でメッセージするだけ)               │
+│  ユーザー (Discord でメッセージするだけ)               │
 └───────────────────────┬──────────────────────────────┘
                         │ Channel Adapter (grammY)
             ┌───────────▼────────────┐
@@ -20,9 +20,9 @@
                         │
         ┌───────────────┼─────────────────┐
         ▼               ▼                 ▼
-   [tsumu Skill]  [sui-agent-wallet]  [x402-pay tool]
-   SOUL.md         (Suimate公式)      (Mockup, AP2 aligned)
-   HEARTBEAT.md    agent ウォレット    402 dance
+   [tsumu Skill]  [sui-agent-wallet]  [mock-pay tool]
+   SOUL.md         (Suimate公式)      (将来のSui決済連携用)
+   HEARTBEAT.md    agent ウォレット    モックアップ決済
    tools.json
         │               │                 │
         │               ▼                 │
@@ -51,18 +51,18 @@
 
 ## レイヤー別の説明
 
-### Layer 1: ユーザー接点(Telegram)
+### Layer 1: ユーザー接点(Discord)
 
-- ユーザーは Telegram bot に話しかけるだけ
+- ユーザーは Discord bot に話しかけるだけ
 - アプリのインストール不要
 - 将来 LINE 対応(OpenClaw が標準でサポート)
 
-**実装**: Telegram Bot API + grammY adapter
+**実装**: OpenClaw ネイティブの Discord 連携
 
 ### Layer 2: OpenClaw Gateway(オーケストレーション)
 
 - macOS / Linux 上で localhost 常駐(systemd / LaunchAgent)
-- Telegram からのメッセージを受け、ReAct loop で LLM に渡す
+- Discord からのメッセージを受け、ReAct loop で LLM に渡す
 - Skills と Tools を Markdown / JSON で管理
 - Heartbeat により30分毎に proactive な会話を提供
 
@@ -100,7 +100,7 @@ openclaw/skills/tsumu/
 | `open_seed` | 7日経過した seed を開封、倍 TOKU |
 | `gift_toku` | 他ウォレットへ送金 + claim link 生成 |
 | `submit_lantern` | reflection を灯火プールに匿名投稿 |
-| `buy_lantern` | x402 で灯火を1枚購入 |
+| `buy_lantern` | 灯火を1枚取得(将来のSui決済モック) |
 | `world_pulse` | 直近1分間の他ユーザー数を取得 |
 
 ### Layer 4: Sui Move Modules
@@ -227,56 +227,14 @@ module tsumu::tide {
 - `@mysten/sui` SDK
 - `@mysten/enoki`(Sponsored Tx ファシリテーター候補)
 
-### Layer 6: x402 / AP2 互換 Endpoint(Mockup)
+### Layer 6: 決済モックアップエンドポイント
 
-`x402-server/` 配下:
-
-```
-x402-server/
-├── api/
-│   ├── lantern.ts      # GET → 402 → payment → return random LanternCard
-│   └── deep-question.ts  # 将来の "智慧の市" 拡張
-└── lib/
-    ├── ap2-mandate.ts  # Intent/Cart/Payment Mandate の構造体
-    └── facilitator.ts  # mock verification
-```
-
-#### 重要: x402 を Sui で純正実装する代わりに、AP2 互換の薄い実装を行う
+将来的には、灯火を取得する際にSuiネイティブなマイクロペイメント（SUIトークンまたはTOKU消費）を組み込む構想です。本ハッカソン時点では、アーキテクチャの複雑化を避けるため決済機能は割愛し、ダミーレスポンスを返すモック実装としています。
 
 理由:
-- Sui ネイティブの x402 facilitator はまだ整備されていない(2026-05時点)
-- Sui は Google × Mysten の **AP2 (Agent Payments Protocol)** の launch partner
-- AP2 の `Intent / Cart / Payment Mandate` 三段署名は Sui の object model と相性が良い
-- 将来 Sui Payment Kit と差し替え可能な構造で実装
+- Suiの決済プロトコル・SDK等のエコシステムが発展した段階でネイティブに統合する予定。
+- プレゼンでは「将来構想としての支払い」と説明し、世界観の維持に努めます。
 
-#### AP2 Mandate のコンセプト実装
-
-```typescript
-type IntentMandate = {
-  user: SuiAddress,
-  intent: "buy_lantern",
-  signature: string,
-};
-
-type CartMandate = {
-  intent_ref: ObjectID,
-  items: [{ kind: "lantern_card", count: 1 }],
-  price: { amount: "0.05", currency: "USDC" },
-  signature: string,
-};
-
-type PaymentMandate = {
-  cart_ref: ObjectID,
-  scheme: "x402-compat",
-  network: "sui-testnet",
-  payer: SuiAddress,
-  payee: SuiAddress,
-  signature: string,
-};
-```
-
-→ 3つの Mandate が Sui object として存在し、それぞれが署名を持つ。
-→ プレゼンで "AP2 をオンチェーン実装" と言える。
 
 ---
 
@@ -285,7 +243,7 @@ type PaymentMandate = {
 ```
 1. [Heartbeat] 7:00 に発火
 2. OpenClaw が tsumu Skill の HEARTBEAT.md を評価
-3. Telegram 経由でユーザーに「おはよう、心は何色?」
+3. Discord 経由でユーザーに「おはよう、心は何色?」
 4. ユーザーが「重い」と返信
 5. tsumu Skill の prompts/3min.md を読み込み、対話開始
 6. 3分後、`record_session` tool を呼ぶ
@@ -293,7 +251,7 @@ type PaymentMandate = {
    ├─ TOKU を 1 枚 mint (Sui)
    ├─ Garden の touch (Sui)
    └─ World Pulse counter を increment (Sui)
-7. World Pulse の値を取得して "今、47人と立ちました" を Telegram に送信
+7. World Pulse の値を取得して "今、47人と立ちました" を Discord に送信
 8. (確率的に) 縁通知を発火
 ```
 
@@ -306,7 +264,7 @@ type PaymentMandate = {
 - Node.js 20+
 - Sui CLI(`brew install sui` または `cargo install --git https://github.com/MystenLabs/sui.git --tag testnet sui`)
 - OpenClaw(`pnpm i -g openclaw` ── 仮)
-- Telegram Bot Token(@BotFather から取得)
+- Discord Bot Token(Discord Developer Portal から取得)
 - Anthropic API Key(または OpenAI)
 
 ### 起動順序
@@ -317,9 +275,6 @@ sui client faucet
 
 # 2. Move package を publish
 cd move/tsumu && sui client publish
-
-# 3. x402 server 起動
-cd x402-server && pnpm dev
 
 # 4. claim app 起動
 cd claim-app && pnpm dev

@@ -29,16 +29,14 @@
 - v2 upgrade 済み(`gift::claim_to` 追加): `0xe82b4a3665e6e9aa9c3067366b801f7e4a56e3f2bd1f314bc8d138a5e0582f43`
 - Object IDs は `openclaw/skills/tsumu/config.env` に保存
 
-**5. x402 / AP2 mockup サーバ**(`x402-server/`)
-- ポート :4402 で稼働中
-- `GET /api/lantern` が 402 → 200 dance、AP2 Mandate 三段含む
-- AP2 IntentMandate / CartMandate / PaymentMandate 構造化済み
+**5. モックアップエンドポイント**
+- 将来のSui決済連携を見据えたモック実装(本ハッカソンでは割愛またはダミー化)
 
 **6. OpenClaw `tsumu` Skill**(`openclaw/skills/tsumu/`)
 - `SKILL.md` / `SOUL.md`(あかり調) / `HEARTBEAT.md` / `config.env`
 - 6 シェルツール(`tools/`):
   - `tsumu_record_session.sh` — セッション NFT + TOKU mint + pulse beat
-  - `tsumu_lantern_buy.sh` — x402 dance
+  - `tsumu_lantern_buy.sh` — 灯火モック取得(将来構想)
   - `tsumu_lantern_submit.sh` — 灯火プールに投稿
   - `tsumu_seal_seed.sh` — 未来の自分への種(60秒で開封可能、デモ用)
   - `tsumu_open_seed.sh` — 種を開封 + 2 TOKU
@@ -58,7 +56,7 @@
 
 **9. End-to-end テスト** — すべて成功
 - `record_session` → World Pulse 0→3、TOKU mint
-- `lantern_buy` → 402→200 dance、card 受領
+- `lantern_buy` → card 受領(モック)
 - `gift_create` → escrow 作成、claim URL 生成
 - `gift_claim_to` (HTTP 経由) → recipient に着地、sender に +1 TOKU
 
@@ -103,13 +101,25 @@ npx -y @marp-team/marp-cli slides/tsumu-pitch.md --pdf
 
 ---
 
-## 実行中のサーバ(ローカル)
+## 実行中のサーバ(ローカル、再起動後の現状)
 
 | サーバ | ポート | 状態 |
 |---|---|---|
-| x402 mockup | 4402 | ✅ 稼働中 (background) |
 | claim webpage | 3000 | ✅ 稼働中 (background) |
-| OpenClaw Gateway | 18789 | ⏳ 未起動(onboard 後) |
+| OpenClaw Gateway | 18789 | ⚠️ daemon 起動済みだが LLM 応答未解決 |
+| x402 mockup | 4402 | ❌ 削除済み(設計を「決済モック」に変更) |
+
+## 11:36 時点の検証結果
+
+`scripts/demo-runner.sh` で全 on-chain フローが完璧に動作することを確認:
+- ✅ Day 1 朝の3分: TOKU mint、World Pulse beat (count: 4)
+- ✅ Day 7 灯火投稿: pool size 1、+0.5 TOKU
+- ✅ Day 7 未来の種: TimeLock seed 封印
+- ✅ Day 30 ギフト作成: GiftEscrow + claim URL
+- ✅ Claim webpage: HTTP 経由で +2 TOKU 受領
+- ✅ 60秒後: 種開封 +2 TOKU 倍返し
+
+**ターミナル + Sui Explorer + claim webpage の 3 画面で完全なライブデモ可能**(OpenClaw 抜きでも提出物として完結)。
 
 ---
 
@@ -123,14 +133,24 @@ npx -y @marp-team/marp-cli slides/tsumu-pitch.md --pdf
 
 ## デモ前最終チェックリスト
 
-```
-[ ] x402 server 動作確認 (curl http://localhost:4402/)
-[ ] claim app 動作確認 (curl http://localhost:3000/healthz)
-[ ] sui client gas で残高確認
-[ ] OpenClaw gateway 起動確認 (openclaw gateway status)
-[ ] Discord で @Tsumu hello → 反応する
-[ ] scripts/demo-runner.sh で全フロー再現
-[ ] Sui Explorer で TOKU mint が見える
-[ ] スライド PDF が出力されている
-[ ] バックアップ動画が録画済み
-```
+- [x] claim app 動作確認 (`curl http://localhost:3000/healthz`)
+- [x] sui client gas で残高確認(0.85 SUI)
+- [x] scripts/demo-runner.sh で全フロー再現(11:36 確認済み)
+- [x] Sui Explorer で TOKU mint が見える
+- [x] スライド HTML 生成済み (slides/tsumu-pitch.html)
+- [ ] OpenClaw gateway → Discord LLM 応答(別 Claude API でテスト中)
+- [ ] バックアップ動画が録画済み
+
+## デモ提出時の構成(2 案)
+
+### 案 A: OpenClaw + Discord(動けば理想)
+LLM 応答が間に合えば、Discord で対話 → ツール呼び出し → on-chain mint の連鎖をライブで見せる。
+
+### 案 B: ターミナル + Sui Explorer + claim webpage(確実)
+`scripts/demo-runner.sh` を実行しながら以下を 3 画面分割で見せる:
+- 左: ターミナル(demo-runner の出力)
+- 中: Sui Explorer(TOKU mint, Session NFT, Lantern submit などライブ反映)
+- 右: claim webpage(ギフト受領のブラウザ UI)
+
+ナレーション(プレゼン台本)で「あかりの 30 日」を語りながら、各ステップが対応する on-chain TX として確実に通る。
+OpenClaw が間に合わなくても、**「Sui の上で本物が動く」がプレゼンの核**として成立する。

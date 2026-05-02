@@ -233,14 +233,14 @@ Sui Explorer に TOKU mint 表示 → World Pulse カウント上昇</span>
 
 # LIVE DEMO
 
-## Day 3: 灯火 (x402 / AP2 dance)
+## Day 3: 灯火 (決済モックアップ)
 
 <br>
 
 <span class="muted">ステージ上で:
 Discord で「灯火ほしい」 →
-HTTP 402 Payment Required dance →
-AP2 Intent/Cart/Payment Mandate →
+Suiネイティブ決済のモックAPIコール →
+(将来はここにSui決済が走ります) →
 誰かの言葉のカードが届く</span>
 
 ```
@@ -303,7 +303,7 @@ QR コード生成 → 会場の1人を指名 →
 <div style="display:grid; grid-template-columns: 1fr; gap: 16px; margin-top: 32px;">
   <div style="text-align: center; font-size: 28px; font-weight: 300;">
     🌊 <span class="gold">Tsumu Tide</span> ── 社会のため(集合)
-    <div class="muted" style="font-size: 16px; margin-top: 4px;">四半期に1回、x402 流入を寄付</div>
+    <div class="muted" style="font-size: 16px; margin-top: 4px;">四半期に1回、決済プールを寄付</div>
   </div>
   <div style="text-align: center; font-size: 28px; font-weight: 300;">
     🪷 <span class="gold">Sangha</span> ── 二人のため(対)
@@ -366,7 +366,7 @@ Tsumu:
 | **zkLogin** | Google ログインで即ウォレット |
 | **Sponsored Transactions** | ガス代を dApp が肩代わり |
 | **Object-centric model** | 「庭」「灯火」「種」が固有 object |
-| **AP2 launch partner** | Mysten × Google 公認の AI 決済 |
+| **Suiネイティブ決済** | 将来のマイクロペイメント構想 |
 
 <br>
 
@@ -397,11 +397,11 @@ Tsumu:
                                               │
               ┌───────────────────────────────┤
               ▼                               ▼
-       [x402 / AP2 Mockup]              [Sui Move]
+       [Mock Payment Tool]              [Sui Move]
        Lantern endpoint                 toku / session / garden
-       402 → IntentMandate              gift / timelock / lantern
-       → CartMandate                    pulse / tide
-       → PaymentMandate                       │
+       将来のSui決済モック              gift / timelock / lantern
+       (ダミーレスポンス)               pulse / tide
+                                              │
                                               ▼
                                        [zkLogin claim webpage]
                                        (Google → ウォレット)

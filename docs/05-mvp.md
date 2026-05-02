@@ -26,10 +26,10 @@
 - ✅ `lantern.move` ── 灯火プール、submit と draw
 
 ### OpenClaw + tsumu Skill
-- ✅ OpenClaw Gateway がローカルで起動、Telegram 接続
+- ✅ OpenClaw Gateway がローカルで起動、Discord 接続
 - ✅ `SOUL.md` 完成(あかり対応のトーン)
 - ✅ `HEARTBEAT.md` で朝の声がけ実装
-- ✅ `tools.json` で Sui mint / x402 fetch / world pulse を呼ぶ
+- ✅ `tools.json` で Sui mint / 灯火モック取得 / world pulse を呼ぶ
 - ✅ 3分セッションの prompt template
 
 ### Claim Webpage(Next.js)
@@ -37,10 +37,9 @@
 - ✅ Google login → zkLogin → ウォレット作成
 - ✅ Sponsored Tx で gift escrow を claim
 
-### x402 / AP2 Mockup
-- ✅ Express + `@x402/express` mockup ファシリテーター
-- ✅ `GET /api/lantern` が 402 → payment → LanternCard を返す
-- ✅ AP2 Mandate object を Sui に記録(最低限)
+### 決済モックアップ
+- ✅ 将来のSuiネイティブ決済を想定したダミー実装
+- ✅ `GET /api/lantern` がダミーの LanternCard を返す
 
 ### Sangha レイヤー
 - ✅ World Pulse counter(Sui shared object に increment)
@@ -54,7 +53,7 @@
 |---|---|
 | Garden の Day 1 → 30 → 100 → 365 進化 | SVG または Midjourney 画像 4枚 |
 | 灯火の夜空 | 静止画(後でアニメ化可) |
-| Tsumu Tide 四半期レポート | Telegram スクショ、架空数字 |
+| Tsumu Tide 四半期レポート | Discord スクショ、架空数字 |
 | LINE 対応 | 「OpenClaw が標準対応」とスライド明記 |
 | 集合徳 → DAO 寄付フロー | 概念図 1枚 |
 
@@ -75,10 +74,10 @@
 
 | Hour | タスク | 完了基準 |
 |---|---|---|
-| **0:00 - 1:00** | OpenClaw + Telegram 接続、Sui Skill 導入 | Telegram で「Hello」が返る |
-| **1:00 - 1:30** | x402 mockup endpoint scaffold | 402 → 200 の dance が curl で通る |
+| **0:00 - 1:00** | OpenClaw + Discord 接続、Sui Skill 導入 | Discord で「Hello」が返る |
+| **1:00 - 1:30** | 灯火モック endpoint scaffold | モックAPIが curl で通る |
 | **1:30 - 4:00** | Move package 実装・testnet publish | Package ID 取得、TOKU mint テスト通過 |
-| **4:00 - 6:30** | tsumu Skill (SOUL.md + 3min prompt + tools.json) | Telegram で 3分セッションが完走 |
+| **4:00 - 6:30** | tsumu Skill (SOUL.md + 3min prompt + tools.json) | Discord で 3分セッションが完走 |
 | **6:30 - 7:30** | Pay-it-forward(escrow + claim Next.js + zkLogin) | リンクから Google login → TOKU 受領が通る |
 | **7:30 - 8:30** | Sangha レイヤー(World Pulse + 縁通知) | セッション末に「N人」が表示される |
 | **8:30 - 9:30** | A2A demo 設定(Discord 2 instance) | 2エージェントの会話が見える |
@@ -87,8 +86,8 @@
 
 ### リスク順に潰す原則
 **Hour 0 と 1:30 が最大リスク区間**:
-- OpenClaw が macOS 25.4 で動かなければ、その時点で plan B(自前 Telegram bot + LangGraph 等)に切替判断
-- x402 dance が3.5h以内に通らなければ、完全モックに切替
+- OpenClaw が macOS 25.4 で動かなければ、その時点で plan B(自前 Discord bot + LangGraph 等)に切替判断
+- モックAPI実装が遅れる場合は静的ファイルで代用
 
 ---
 
@@ -96,7 +95,7 @@
 
 ### 画面分割
 ```
-左:Telegram(ユーザー視点)
+左:Discord(ユーザー視点)
 中:Sui Explorer(オンチェーン同期表示)
 右:スライド(語りの補助)
 ```
@@ -118,12 +117,12 @@
         ナレーション「彼女は今、Sui を持った。気づかないまま」
 
 [01:00] Day 1: 朝の3分(圧縮版)
-        Telegram で「重い」→ 3分セッション(30秒に圧縮)
+        Discord で「重い」→ 3分セッション(30秒に圧縮)
         Sui Explorer に TOKU mint 反映(拍手ポイント①)
         「+1 TOKU。今、世界で 12人と立ちました」← Sangha 演出
 
-[01:45] Day 3: 灯火を1枚受け取る(x402 mockup の見せ場)
-        HTTP 402 dance を文字スーパーで可視化
+[01:45] Day 3: 灯火を1枚受け取る(将来構想モックの見せ場)
+        Suiネイティブ決済によるマイクロペイメントの構想を説明
         「ある人からの言葉です」+ カード演出
 
 [02:30] Day 14: 自分の言葉が誰かを支えた(感情ピーク)
@@ -144,8 +143,8 @@
         「あかりさんの 47回が、ここに、確かに、ありました」(感情ピーク②)
 
 [04:15] 技術整合性(30秒)
-        スライド: zkLogin / Sponsored Tx / TimeLock / x402 / AP2
-        「Sui は AP2 の launch partner、Tsumu はその哲学に乗ります」
+        スライド: zkLogin / Sponsored Tx / TimeLock / Sui Payment(将来構想)
+        「Suiの速さと優雅さを活かします」
 
 [04:45] 締め
         黒画面に文字
@@ -159,11 +158,11 @@
 
 | 失敗ケース | プラン B |
 |---|---|
-| OpenClaw が起動しない | 自前 Telegram bot + Anthropic SDK 直叩き |
-| x402 dance が通らない | サーバ側を完全モック化、HTTP の表示だけ残す |
+| OpenClaw が起動しない | 自前 Discord bot + Anthropic SDK 直叩き |
+| モックAPIがダウン | 固定テキストを返すようにスクリプト側で対応 |
 | zkLogin の onboarding が失敗 | claim ページを「すでに claim 済み」に偽装した状態を見せる |
 | Sui Testnet がダウン | 録画したデモを流す |
-| Telegram API が遅い | デモ前に warming session を済ませておく |
+| Discord API が遅い | デモ前に warming session を済ませておく |
 
 **録画**: 9:30 から 1 時間で、5分の通しデモを最低 3 テイク録画しておく。
 最低保証は録画があること。**ライブで通れば加点、通らなくても提出は完成**。
@@ -184,10 +183,10 @@
 
 ハッカソン提出時点で、最低以下が動く必要がある:
 
-1. ✅ Telegram で Tsumu に話しかけると、3分セッションが完走する
+1. ✅ Discord で Tsumu に話しかけると、3分セッションが完走する
 2. ✅ セッション後、Sui Explorer で TOKU mint が確認できる
 3. ✅ ペイフォワード送付 → claim ページ → Google login → 新ウォレット作成、が一通り通る
-4. ✅ x402 endpoint が 402 を返し、payment後に LanternCard を返す
+4. ✅ 灯火モック endpoint がダミーの LanternCard を返す
 5. ✅ World Pulse 「今、N人と立ちました」がセッション末に出る
 6. ✅ 録画版の5分デモが、ライブ失敗時の保険として用意されている
 

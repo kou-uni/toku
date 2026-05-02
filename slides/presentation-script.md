@@ -16,7 +16,7 @@
 | 1:40 - 2:00 | 5 ペルソナ | あかり |
 | 2:00 - 2:20 | 6+7 Day 0 | ギフト受領 LIVE |
 | 2:20 - 2:40 | 8+9 Day 1 | 朝の3分 LIVE(圧縮) |
-| 2:40 - 3:10 | 10+11 Day 3 | 灯火 (x402) LIVE |
+| 2:40 - 3:10 | 10+11 Day 3 | 灯火 (決済モック) LIVE |
 | 3:10 - 3:25 | 12 Day 14 | 「自分の言葉が誰かを灯した」 |
 | 3:25 - 3:50 | 13+14 Day 30 | Pay-forward 観客参加 LIVE |
 | 3:50 - 4:10 | 15+16 集合徳 + Tide | 三輪と寄付レポート |
@@ -117,7 +117,7 @@
 > Tsumu は OpenClaw の上に、Skill を1つ重ねただけ。
 
 ### 20. アーキテクチャ
-> Discord → OpenClaw → tsumu Skill → Sui Move + x402/AP2 Mockup + claim webpage。
+> Discord → OpenClaw → tsumu Skill → Sui Move + 決済モック + claim webpage。
 > すべて Sui Testnet 上で稼働中。Package ID は 0xbb218662…。
 
 ### 22. 締め
@@ -130,9 +130,6 @@
 ## デモ事前チェック(本番5分前に確認)
 
 ```bash
-# x402 server
-curl -s http://localhost:4402/ | head -1
-
 # claim app
 curl -s http://localhost:3000/healthz
 
@@ -140,9 +137,25 @@ curl -s http://localhost:3000/healthz
 sui client active-address
 sui client gas
 
-# OpenClaw (Discord)
+# OpenClaw + Discord (案 A)
 # Discord で @Tsumu hello → 反応する
+
+# ターミナル経由フルフロー (案 B、フォールバック)
+bash scripts/demo-runner.sh
 ```
+
+## デモ実施 2 案
+
+### 案 A: Discord ライブ(理想)
+Discord で @Tsumu に話しかけて、エージェントが on-chain ツールを呼ぶ流れをライブで見せる。
+
+### 案 B: ターミナルライブ(フォールバック、動作保証)
+`scripts/demo-runner.sh` を実行しながら 3 画面分割:
+- 左: ターミナル(各ステップの JSON output)
+- 中: Sui Explorer(TOKU mint / Session NFT / Lantern など即時反映)
+- 右: claim webpage(ギフト受領フロー)
+
+ナレーションは同じ「あかりの 30 日」。**全 6 ステップの Sui TX が確実に通る**ので、ライブ感では Discord に劣るが、信頼性は最高。
 
 ---
 
@@ -150,10 +163,11 @@ sui client gas
 
 | 失敗 | 対処 |
 |---|---|
-| OpenClaw が応答しない | 録画版に切替(`backup-demo.mov`) |
-| x402 dance が通らない | 「画面表示だけ見せて、リトライ」と言う |
+| OpenClaw / Discord が応答しない | **案 B(ターミナルデモ)に切替** ─ `bash scripts/demo-runner.sh` で全フロー2分 |
+| ターミナルでも止まる | 録画版に切替(`backup-demo.mov`) |
 | Sui Testnet が遅い | tx 確認の演出を長めに語る(15秒の沈黙OK) |
 | 観客 QR スキャンが反応しない | スタッフが代理で読み取り |
+| claim app が落ちる | `cd claim-app && node server.js &` で再起動 |
 
 ---
 

@@ -107,7 +107,7 @@ public fun apply_decay(balance: &mut TokuBalance, clock: &Clock) {
 
 ---
 
-## 灯火プール経済(x402 / AP2 統合)
+## 灯火プール経済(決済モックアップ)
 
 ### 流れ
 ```
@@ -123,9 +123,9 @@ public fun apply_decay(balance: &mut TokuBalance, clock: &Clock) {
 [購入側]
    別ユーザーが「灯火がほしい」とリクエスト
         ↓
-   x402 dance: GET /api/lantern → 402 → payment → 200
+   Suiネイティブ決済モック: /api/lantern へリクエストし、ダミーレスポンスを受領
         ↓
-   0.05 USDC が Tide Pool に流入
+   (将来構想: 0.05 USDC相当のSUIが Tide Pool に流入)
         ↓
    ランダムに 1 枚の LanternCard が選択
         ↓
@@ -133,23 +133,22 @@ public fun apply_decay(balance: &mut TokuBalance, clock: &Clock) {
 ```
 
 ### 価格設定
-- **0.05 USDC ≒ 7円** = 缶コーヒーより安い、非投機的
+- **将来構想**: 非投機的で手軽な価格設定
 - 投稿者と購入者の双方に正のインセンティブ
-- 80% は Tide Pool へ(寄付の原資)
+- 将来の決済流入額の 80% は Tide Pool へ(寄付の原資)
 - 20% はインフラ運用費
 
-### x402 / AP2 互換性
-本番では Sui Payment Kit と組み合わせるが、現MVPでは:
-- HTTP 402 dance を実装(プロトコル準拠)
-- AP2 の Intent / Cart / Payment Mandate を Sui object として記録
-- 将来 facilitator 整備時に差し替え可能
+### 将来のSui連携
+本番(将来)では Sui のネイティブ決済機能と組み合わせるが、現MVPでは:
+- ダミーのモックアップAPIを実装
+- アーキテクチャの複雑化を避けるため、実際の決済処理は割愛
 
 ---
 
 ## Tsumu Tide(寄付プール)
 
 ### 仕組み
-- 灯火 x402 流入の 80% が Tide Pool に蓄積
+- 将来の決済流入額の 80% が Tide Pool に蓄積
 - 四半期に1回、TOKU holder で**寄付先投票**
 - 結果は Sui に永続記録、誰でも参照可能
 
