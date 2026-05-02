@@ -239,6 +239,124 @@ h2 {
   max-width: 320px;
 }
 
+/* ===== Hero: on-chain proof CTA ============================================
+   The single most important action on the success screen for a hackathon
+   audience: "click here to verify this really hit Sui." Made deliberately
+   large, gold, breathing — drowns out the smaller receipt below it. */
+.onchain-hero {
+  display: block;
+  margin: 32px auto 16px;
+  max-width: 440px;
+  padding: 22px 24px;
+  background: linear-gradient(135deg, #fff 0%, #fff8e8 50%, #f4e8c4 100%);
+  border: 2px solid var(--gold);
+  border-radius: 16px;
+  text-decoration: none;
+  color: var(--ink);
+  text-align: center;
+  box-shadow:
+    0 4px 14px rgba(184, 150, 87, 0.18),
+    0 0 0 0 rgba(184, 150, 87, 0.4);
+  animation:
+    onchain-hero-enter 0.7s cubic-bezier(0.18, 0.89, 0.32, 1.28) 0.6s both,
+    onchain-hero-pulse 2.6s ease-in-out 1.6s infinite;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.onchain-hero:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 22px rgba(184, 150, 87, 0.32),
+    0 0 0 6px rgba(184, 150, 87, 0.12);
+}
+@keyframes onchain-hero-enter {
+  0%   { transform: translateY(20px) scale(0.92); opacity: 0; }
+  60%  { transform: translateY(-3px) scale(1.03); opacity: 1; }
+  100% { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+@keyframes onchain-hero-pulse {
+  0%, 100% {
+    box-shadow:
+      0 4px 14px rgba(184, 150, 87, 0.18),
+      0 0 0 0 rgba(184, 150, 87, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 4px 14px rgba(184, 150, 87, 0.32),
+      0 0 0 14px rgba(184, 150, 87, 0);
+  }
+}
+/* Diagonal shimmer pass on entry */
+.onchain-hero::before {
+  content: "";
+  position: absolute;
+  top: 0; left: -120%;
+  width: 70%; height: 100%;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.7) 50%,
+    transparent 100%
+  );
+  animation: onchain-hero-shimmer 2.2s ease-out 0.9s 1;
+  pointer-events: none;
+}
+@keyframes onchain-hero-shimmer {
+  to { left: 200%; }
+}
+.onchain-hero-eyebrow {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  color: var(--gold);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.onchain-hero-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+.onchain-hero-arrow {
+  display: inline-block;
+  font-size: 24px;
+  color: var(--gold);
+  transition: transform 0.3s ease;
+}
+.onchain-hero:hover .onchain-hero-arrow {
+  transform: translate(4px, -4px);
+}
+.onchain-hero-tx {
+  display: inline-block;
+  margin: 0 auto 10px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 999px;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+  font-family: "SF Mono", Menlo, monospace;
+}
+.onchain-hero-tx code {
+  color: var(--ink);
+  font-weight: 500;
+}
+.onchain-hero-note {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--ink-mute);
+  margin-top: 4px;
+}
+
 .receipt {
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);

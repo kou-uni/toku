@@ -59,6 +59,20 @@
       <p class="amount-small" id="success-amount"></p>
       <p class="message" id="success-msg"></p>
 
+      <!-- HERO CTA: on-chain proof. Stands out because the entire pitch
+           depends on judges/audience trusting that this really hit Sui. -->
+      <a class="onchain-hero" id="open-explorer" target="_blank" rel="noopener">
+        <span class="onchain-hero-eyebrow">オンチェーンで確認</span>
+        <span class="onchain-hero-title">
+          <span class="onchain-hero-arrow">↗</span>
+          Sui Explorer
+        </span>
+        <span class="onchain-hero-tx">
+          TX <code id="tx-link-inline">—</code>
+        </span>
+        <span class="onchain-hero-note">この受領は、Sui Testnet に確かに記録されました。</span>
+      </a>
+
       <div class="receipt">
         <div class="row">
           <span class="key">あなたのウォレット</span>
@@ -69,10 +83,6 @@
           <a class="val" id="tx-link" target="_blank" rel="noopener"></a>
         </div>
       </div>
-
-      <a class="secondary" id="open-explorer" target="_blank" rel="noopener">
-        Sui Explorer で見る →
-      </a>
 
       <a class="tide-cta" href="http://localhost:3100/tide" target="_blank" rel="noopener">
         <span class="tide-cta-emoji">🪷</span>
@@ -317,10 +327,17 @@ document.getElementById("claim-btn").addEventListener("click", async () => {
     const recip = j.recipient || "";
     const recipShort = recip.length > 16 ? recip.slice(0, 8) + "…" + recip.slice(-6) : recip;
     document.getElementById("recipient").textContent = recipShort;
+    const txDigest = j.claim_tx || "";
+    const txShort  = txDigest ? (txDigest.slice(0, 8) + "…" + txDigest.slice(-6)) : "—";
+    const txUrl    = j.explorer_tx_url || "#";
     const txLink = document.getElementById("tx-link");
-    txLink.href = j.explorer_tx_url || "#";
-    txLink.textContent = (j.claim_tx || "").slice(0, 12) + "…";
-    document.getElementById("open-explorer").href = j.explorer_recipient_url || "#";
+    txLink.href = txUrl;
+    txLink.textContent = txShort;
+    // Hero CTA points at the TX (proof of the claim itself); inline TX
+    // digest is shown big inside the CTA so the audience sees it land.
+    const hero = document.getElementById("open-explorer");
+    hero.href = txUrl;
+    document.getElementById("tx-link-inline").textContent = txShort;
     show("success");
   } catch (e) {
     document.getElementById("error-detail").textContent = e.message;
