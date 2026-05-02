@@ -3,6 +3,7 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/claim/:id", "destination": "/claim.html" }
+    { "source": "/", "destination": "/chat.html" },
+    { "source": "/tide", "destination": "/tide.html" }
   ]
 }
