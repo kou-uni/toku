@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>Tsumu — 静寂のためのエージェント</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div id="app">
+    <aside id="sidebar">
+      <div class="logo">積</div>
+      <h1>Tsumu</h1>
+      <p class="muted">静寂のためのエージェント</p>
+
+      <section class="state live">
+        <h2>ライブ on-chain 状態</h2>
+        <div class="counter">
+          <span class="label">徳(TOKU)</span>
+          <span class="num" id="toku-balance">—</span>
+        </div>
+        <div class="counter">
+          <span class="label">世界の鼓動</span>
+          <span class="num" id="pulse-count">—</span>
+          <span class="suffix">人</span>
+        </div>
+        <div class="counter">
+          <span class="label">灯火プール</span>
+          <span class="num" id="pool-count">—</span>
+          <span class="suffix">枚</span>
+        </div>
+        <button id="refresh-state" class="ghost-small">↻ 更新</button>
+      </section>
+
+      <section class="story">
+        <h2>あかりの30日(進行)</h2>
+        <div id="story-buttons"></div>
+      </section>
+
+      <section class="actions">
+        <h2>個別アクション</h2>
+        <button data-action="record-session">3分の座を記録</button>
+        <button data-action="lantern-submit">灯火を流す</button>
+        <button data-action="seal-seed">未来の自分への種</button>
+        <button data-action="gift-create">ギフトを作る</button>
+      </section>
+
+      <section class="state">
+        <h2>Agent</h2>
+        <div class="row">
+          <span class="key">addr</span>
+          <code class="val" id="agent-addr">—</code>
+        </div>
+        <div class="row">
+          <span class="key">Sui Explorer</span>
+          <a id="explorer-link" target="_blank" rel="noopener">開く →</a>
+        </div>
+      </section>
+
+      <button id="reset" class="ghost">会話をリセット</button>
+    </aside>
+
+    <main id="main">
+      <header>
+        <h2>Tsumu との対話</h2>
+        <p class="muted small">日本語で話しかけてください。比喩で問い、控えめに返します。<span class="backend-tag" id="backend-tag">backend: OpenAI</span></p>
+      </header>
+
+      <div id="chat"></div>
+
+      <form id="composer">
+        <textarea id="input" placeholder="ここに書く…" rows="2"></textarea>
+        <button type="submit">送る</button>
+      </form>
+    </main>
+
+    <aside id="sui-panel">
+      <div class="sui-header">
+        <span class="sui-logo">✦</span>
+        <div>
+          <h2>Sui で動いている</h2>
+          <p class="muted small">すべての操作は Sui Testnet 上の本物のトランザクション</p>
+        </div>
+      </div>
+
+      <section class="metric-grid">
+        <div class="metric">
+          <span class="metric-num" id="sui-mints">—</span>
+          <span class="metric-label">直近 mint 数</span>
+        </div>
+        <div class="metric">
+          <span class="metric-num" id="sui-network">—</span>
+          <span class="metric-label">参加ウォレット</span>
+        </div>
+        <div class="metric">
+          <span class="metric-num" id="sui-claims">—</span>
+          <span class="metric-label">ギフト受領</span>
+        </div>
+        <div class="metric">
+          <span class="metric-num" id="sui-pulses">—</span>
+          <span class="metric-label">世界の鼓動</span>
+        </div>
+      </section>
+
+      <section class="diaspora">
+        <h3>配布の連鎖(直近受領者)</h3>
+        <div id="diaspora-list" class="diaspora-list">
+          <p class="muted small">まだ広がりはありません。Day 0 のギフトから始まります。</p>
+        </div>
+      </section>
+
+      <section class="feed">
+        <h3>ライブイベント</h3>
+        <div id="feed-list" class="feed-list"></div>
+      </section>
+
+      <footer class="package-link">
+        <span>Move Package:</span>
+        <a id="package-link" target="_blank" rel="noopener">0xbb21…7f02 →</a>
+      </footer>
+    </aside>
+  </div>
+
+<dialog id="modal">
+  <form id="modal-form">
+    <h3 id="modal-title"></h3>
+    <p class="muted small" id="modal-desc"></p>
+    <div id="modal-fields"></div>
+    <menu>
+      <button type="button" id="modal-cancel" class="ghost">やめる</button>
+      <button type="submit" class="primary">実行</button>
+    </menu>
+  </form>
+</dialog>
+
+<script>
+const chat = document.getElementById("chat");
+const input = document.getElementById("input");
+const composer = document.getElementById("composer");
+
+function appendMessage(role, text, meta) {
+  const div = document.createElement("div");
+  div.className = `msg ${role}`;
+  if (meta) {
+    const m = document.createElement("div");
+    m.className = "meta";
+    m.textContent = meta;
+    div.appendChild(m);
+  }
+  const p = document.createElement("div");
+  p.className = "body";
+  p.textContent = text;
+  div.appendChild(p);
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+async function loadState() {
+  const r = await fetch("/api/state");
+  const d = await r.json();
+  document.getElementById("agent-addr").textContent =
+    d.agentAddr.slice(0, 8) + "…" + d.agentAddr.slice(-4);
+  document.getElementById("explorer-link").href = d.explorerUrl;
+  document.getElementById("toku-balance").textContent =
+    d.tokuBalance != null ? d.tokuBalance.toFixed(2) : "—";
+  document.getElementById("pulse-count").textContent =
+    d.worldPulseTotal != null ? d.worldPulseTotal : "—";
+  document.getElementById("pool-count").textContent =
+    d.lanternPoolSize != null ? d.lanternPoolSize : "—";
+  if (chat.children.length === 0) {
+    for (const m of d.conversation) appendMessage(m.role, m.content);
+    if (d.conversation.length === 0) {
+      appendMessage("assistant", "おはよう。今、心は何色?");
+    }
+  }
+}
+async function refreshCounters() {
+  try {
+    const r = await fetch("/api/state");
+    const d = await r.json();
+    document.getElementById("toku-balance").textContent =
+      d.tokuBalance != null ? d.tokuBalance.toFixed(2) : "—";
+    document.getElementById("pulse-count").textContent =
+      d.worldPulseTotal != null ? d.worldPulseTotal : "—";
+    document.getElementById("pool-count").textContent =
+      d.lanternPoolSize != null ? d.lanternPoolSize : "—";
+  } catch {}
+}
+loadState();
+document.getElementById("refresh-state").addEventListener("click", refreshCounters);
+// auto-refresh every 30s
+setInterval(refreshCounters, 30000);
+
+// Story progression
+async function loadStoryButtons() {
+  const r = await fetch("/api/story/list");
+  const beats = await r.json();
+  const c = document.getElementById("story-buttons");
+  c.innerHTML = "";
+  for (const b of beats) {
+    const btn = document.createElement("button");
+    btn.className = "story-btn";
+    btn.textContent = b.label + (b.hasTool ? " ✦" : "");
+    btn.dataset.beat = b.id;
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      btn.textContent = "実行中…";
+      const meta = `▸ ストーリー: ${b.label}`;
+      appendMessage("system", "(進行中)", meta);
+      try {
+        const r = await fetch("/api/story/" + b.id, { method: "POST" });
+        const j = await r.json();
+        chat.lastChild.remove();
+        // re-load conversation to show all narration + LLM follow-up
+        const s = await fetch("/api/state");
+        const sd = await s.json();
+        chat.innerHTML = "";
+        for (const m of sd.conversation) {
+          const meta = m._meta === "system" ? "ナレーション" : null;
+          appendMessage(m.role, m.content, meta);
+        }
+        if (j.toolResult) {
+          if (j.toolResult.claim_url) {
+            const a = document.createElement("a");
+            a.href = j.toolResult.claim_url;
+            a.target = "_blank";
+            a.textContent = "🎁 " + j.toolResult.claim_url;
+            a.className = "claim-link";
+            chat.lastChild.appendChild(a);
+          }
+          const txKey = j.toolResult.mint_tx || j.toolResult.session_tx || j.toolResult.gift_tx || j.toolResult.submit_tx || j.toolResult.seal_tx;
+          if (txKey) {
+            const a = document.createElement("a");
+            a.href = "https://suiscan.xyz/testnet/tx/" + txKey;
+            a.target = "_blank";
+            a.textContent = "Sui Explorer で見る →";
+            a.className = "claim-link";
+            chat.lastChild.appendChild(a);
+          }
+        }
+        await refreshCounters();
+      } catch (err) {
+        appendMessage("error", "失敗: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = b.label + (b.hasTool ? " ✦" : "");
+      }
+    });
+    c.appendChild(btn);
+  }
+}
+loadStoryButtons();
+
+// ==== Sui visualization panel ====
+function timeAgo(ts) {
+  if (!ts) return "—";
+  const sec = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+  if (sec < 60) return `${sec}秒前`;
+  if (sec < 3600) return `${Math.floor(sec/60)}分前`;
+  if (sec < 86400) return `${Math.floor(sec/3600)}時間前`;
+  return `${Math.floor(sec/86400)}日前`;
+}
+
+const TYPE_ICON = {
+  TokuMinted: "✦",
+  SessionRecorded: "🪨",
+  LanternSubmitted: "🪶",
+  GiftCreated: "📨",
+  GiftClaimed: "🎁",
+  Beat: "🪷",
+  SeedSealed: "🌱",
+  SeedOpened: "🌸",
+};
+
+let prevMetrics = {};
+function animateNum(id, newVal) {
+  const el = document.getElementById(id);
+  const old = Number(el.textContent) || 0;
+  el.textContent = newVal;
+  if (newVal > old && prevMetrics[id] !== undefined) {
+    el.classList.remove("pulse");
+    void el.offsetWidth;
+    el.classList.add("pulse");
+  }
+  prevMetrics[id] = newVal;
+}
+
+async function refreshSuiPanel() {
+  try {
+    const r = await fetch("/api/sui/stats");
+    const d = await r.json();
+    animateNum("sui-mints", d.eventCounts.TokuMinted || 0);
+    animateNum("sui-network", d.networkSize || 0);
+    animateNum("sui-claims", d.eventCounts.GiftClaimed || 0);
+    animateNum("sui-pulses", d.eventCounts.Beat || 0);
+
+    // diaspora
+    const dl = document.getElementById("diaspora-list");
+    if (d.diaspora.length === 0) {
+      dl.innerHTML = '<p class="muted small">まだ広がりはありません。Day 0 のギフトから始まります。</p>';
+    } else {
+      dl.innerHTML = "";
+      for (const w of d.diaspora.slice(0, 8)) {
+        const a = document.createElement("a");
+        a.href = w.explorerUrl;
+        a.target = "_blank";
+        a.className = "diaspora-item";
+        a.innerHTML = `<span class="dot"></span><code>${w.short}</code>`;
+        dl.appendChild(a);
+      }
+      if (d.diaspora.length > 8) {
+        const more = document.createElement("p");
+        more.className = "muted small";
+        more.textContent = `+ ${d.diaspora.length - 8} 人`;
+        dl.appendChild(more);
+      }
+    }
+
+    // feed
+    const fl = document.getElementById("feed-list");
+    fl.innerHTML = "";
+    for (const e of d.feed) {
+      const item = document.createElement("a");
+      item.href = e.explorerUrl || "#";
+      item.target = "_blank";
+      item.className = "feed-item";
+      item.innerHTML = `
+        <span class="feed-icon">${TYPE_ICON[e.type] || "•"}</span>
+        <div class="feed-body">
+          <div class="feed-summary">${e.summary}</div>
+          <div class="feed-meta">${timeAgo(e.ts)} · ${(e.tx||"").slice(0,8)}…</div>
+        </div>`;
+      fl.appendChild(item);
+    }
+
+    document.getElementById("package-link").href = d.explorerPackageUrl;
+  } catch (e) {
+    console.error("sui panel refresh failed", e);
+  }
+}
+refreshSuiPanel();
+setInterval(refreshSuiPanel, 8000);
+
+composer.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const message = input.value.trim();
+  if (!message) return;
+  input.value = "";
+  appendMessage("user", message);
+  const typing = document.createElement("div");
+  typing.className = "typing";
+  typing.textContent = "Tsumu が考えています…";
+  chat.appendChild(typing);
+  chat.scrollTop = chat.scrollHeight;
+  try {
+    const r = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message }),
+    });
+    typing.remove();
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}));
+      appendMessage("error", "エラー: " + (j.error || r.statusText));
+      return;
+    }
+    const j = await r.json();
+    appendMessage("assistant", j.reply);
+  } catch (err) {
+    typing.remove();
+    appendMessage("error", "接続エラー: " + err.message);
+  }
+});
+
+document.getElementById("reset").addEventListener("click", async () => {
+  if (!confirm("会話をすべて消します。よろしいですか?")) return;
+  await fetch("/api/reset", { method: "POST" });
+  chat.innerHTML = "";
+  appendMessage("assistant", "おはよう。今、心は何色?");
+});
+
+// --- Action buttons ---
+
+const ACTIONS = {
+  "record-session": {
+    title: "3分の座を記録",
+    desc: "Session NFT 作成 + TOKU mint + World Pulse beat。実際の Sui TX が発行されます。",
+    fields: [
+      { name: "duration", label: "時間(秒)", type: "number", value: 180 },
+      { name: "colorBefore", label: "前の色", type: "text", value: "重い" },
+      { name: "colorAfter", label: "後の色", type: "text", value: "薄い水色" },
+      { name: "reflection", label: "ひとこと", type: "text", value: "今日の3分" },
+    ],
+  },
+  "lantern-submit": {
+    title: "灯火を流す",
+    desc: "reflection を匿名で Lantern プールに投稿。+0.5 TOKU。",
+    fields: [
+      { name: "text", label: "言葉", type: "text", value: "描いてる時、私は呼吸している" },
+    ],
+  },
+  "seal-seed": {
+    title: "未来の自分への種を残す",
+    desc: "TimeLock seed を Sui に封印。デモは 60秒で開封可能。",
+    fields: [
+      { name: "message", label: "未来の自分への一言", type: "text", value: "完璧じゃなくていい" },
+      { name: "seconds", label: "封印秒数", type: "number", value: 60 },
+    ],
+  },
+  "gift-create": {
+    title: "ギフトを作る",
+    desc: "GiftEscrow 作成 + claim URL 生成。受け手は URL を開いて受領。",
+    fields: [
+      { name: "amount", label: "TOKU 数", type: "number", value: 1, step: 0.1 },
+      { name: "note", label: "メッセージ", type: "text", value: "あかりからの最初の徳" },
+    ],
+  },
+};
+
+const modal = document.getElementById("modal");
+const modalTitle = document.getElementById("modal-title");
+const modalDesc = document.getElementById("modal-desc");
+const modalFields = document.getElementById("modal-fields");
+const modalForm = document.getElementById("modal-form");
+let currentAction = null;
+
+document.querySelectorAll("[data-action]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const action = btn.dataset.action;
+    const config = ACTIONS[action];
+    if (!config) return;
+    currentAction = action;
+    modalTitle.textContent = config.title;
+    modalDesc.textContent = config.desc;
+    modalFields.innerHTML = "";
+    for (const f of config.fields) {
+      const wrap = document.createElement("label");
+      wrap.className = "field";
+      const span = document.createElement("span");
+      span.textContent = f.label;
+      const inp = document.createElement("input");
+      inp.name = f.name;
+      inp.type = f.type;
+      inp.value = f.value;
+      if (f.step) inp.step = f.step;
+      wrap.appendChild(span);
+      wrap.appendChild(inp);
+      modalFields.appendChild(wrap);
+    }
+    modal.showModal();
+  });
+});
+
+document.getElementById("modal-cancel").addEventListener("click", () => modal.close());
+
+modalForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const fd = new FormData(modalForm);
+  const body = {};
+  for (const [k, v] of fd.entries()) {
+    body[k] = isNaN(Number(v)) || v === "" ? v : Number(v);
+  }
+  modal.close();
+  const meta = `▸ ${ACTIONS[currentAction].title} 実行中…`;
+  appendMessage("system", "(処理中)", meta);
+  try {
+    const r = await fetch(`/api/tool/${currentAction}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}));
+      chat.lastChild.querySelector(".body").textContent = "(失敗) " + (j.error || r.statusText);
+      return;
+    }
+    const j = await r.json();
+    chat.lastChild.querySelector(".body").textContent = j.narrative || JSON.stringify(j);
+    chat.lastChild.classList.remove("system");
+    chat.lastChild.classList.add("assistant");
+
+    // surface a clickable link if claim_url present
+    if (j.claim_url) {
+      const a = document.createElement("a");
+      a.href = j.claim_url;
+      a.target = "_blank";
+      a.textContent = j.claim_url;
+      a.className = "claim-link";
+      chat.lastChild.appendChild(a);
+    }
+    if (j.mint_tx) {
+      const a = document.createElement("a");
+      a.href = "https://suiscan.xyz/testnet/tx/" + j.mint_tx;
+      a.target = "_blank";
+      a.textContent = "Sui Explorer で見る →";
+      a.className = "claim-link";
+      chat.lastChild.appendChild(a);
+    }
+    if (j.session_tx) {
+      const a = document.createElement("a");
+      a.href = "https://suiscan.xyz/testnet/tx/" + j.session_tx;
+      a.target = "_blank";
+      a.textContent = "Session NFT を見る →";
+      a.className = "claim-link";
+      chat.lastChild.appendChild(a);
+    }
+  } catch (err) {
+    chat.lastChild.querySelector(".body").textContent = "(エラー) " + err.message;
+  }
+});
+</script>
+</body>
+</html>

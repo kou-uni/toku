@@ -1,0 +1,16 @@
+{
+  "name": "tsumu-chat",
+  "version": "0.1.0",
+  "description": "Browser chat UI for Tsumu — LLM + on-chain tools",
+  "private": true,
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "openai": "^4.76.0"
+  }
+}
