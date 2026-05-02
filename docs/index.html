@@ -415,6 +415,66 @@ body:has(.slide.dark.active) .top-link {
   transform: translateY(-1px);
 }
 
+/* — Architecture slide (slide 2) — same hero treatment as demo — */
+.arch-slide {
+  align-items: center;
+  justify-content: center;
+}
+.arch-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  gap: 18px;
+}
+.arch-eyebrow {
+  font-size: 14px;
+  letter-spacing: 0.32em;
+  color: var(--gold);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.arch-frame {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  max-height: calc(100vh - 180px);
+  background: #fafafa;
+  border: 3px solid var(--gold);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.10),
+    0 0 0 0 rgba(184, 150, 87, 0.5);
+  animation: demo-halo 3s ease-in-out infinite;
+}
+.arch-frame iframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+}
+.arch-fallback {
+  display: inline-block;
+  padding: 12px 24px;
+  font-size: 14px;
+  letter-spacing: 0.18em;
+  color: var(--gold);
+  background: rgba(184, 150, 87, 0.08);
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+.arch-fallback:hover {
+  background: var(--gold);
+  color: #fafaf7;
+  transform: translateY(-1px);
+}
+
 /* responsive */
 @media (max-width: 980px) {
   .cover-grid { grid-template-columns: 1fr; gap: 32px; }
@@ -433,27 +493,8 @@ body:has(.slide.dark.active) .top-link {
 
 <div class="deck">
 
-<!-- 0: Demo Video — leads the deck so judges see the live experience first -->
-<section class="slide active demo-slide">
-  <div class="demo-wrap">
-    <div class="demo-eyebrow">DEMO ── 2 分で見る Tsumu</div>
-    <div class="demo-video-frame">
-      <iframe
-        src="https://drive.google.com/file/d/1jiRLtvx6RMgoutk1KCejLZkBHqB6Jn3x/preview"
-        frameborder="0"
-        allow="autoplay; encrypted-media; fullscreen"
-        allowfullscreen
-        loading="lazy">
-      </iframe>
-    </div>
-    <a class="demo-fallback" href="https://drive.google.com/file/d/1jiRLtvx6RMgoutk1KCejLZkBHqB6Jn3x/view?usp=sharing" target="_blank" rel="noopener">
-      ▶ Google Drive で開く ↗
-    </a>
-  </div>
-</section>
-
-<!-- 1: Cover -->
-<section class="slide">
+<!-- 1: Cover (now leads the deck) -->
+<section class="slide active">
   <div class="cover-grid">
     <div>
       <div class="cover-tag">clawathon ── OpenClaw × Sui</div>
@@ -478,7 +519,39 @@ body:has(.slide.dark.active) .top-link {
   </div>
 </section>
 
-<!-- 2: Why Now -->
+<!-- 2: Architecture (Mermaid 俯瞰図、別ページを iframe 埋込) -->
+<section class="slide arch-slide">
+  <div class="arch-wrap">
+    <div class="arch-eyebrow">ARCHITECTURE ── 俯瞰図</div>
+    <div class="arch-frame">
+      <iframe src="/architecture" title="Tsumu architecture" loading="lazy"></iframe>
+    </div>
+    <a class="arch-fallback" href="/architecture" target="_blank" rel="noopener">
+      🪟 別タブで開く ↗
+    </a>
+  </div>
+</section>
+
+<!-- 3: Demo Video -->
+<section class="slide demo-slide">
+  <div class="demo-wrap">
+    <div class="demo-eyebrow">DEMO ── 2 分で見る Tsumu</div>
+    <div class="demo-video-frame">
+      <iframe
+        src="https://drive.google.com/file/d/1jiRLtvx6RMgoutk1KCejLZkBHqB6Jn3x/preview"
+        frameborder="0"
+        allow="autoplay; encrypted-media; fullscreen"
+        allowfullscreen
+        loading="lazy">
+      </iframe>
+    </div>
+    <a class="demo-fallback" href="https://drive.google.com/file/d/1jiRLtvx6RMgoutk1KCejLZkBHqB6Jn3x/view?usp=sharing" target="_blank" rel="noopener">
+      ▶ Google Drive で開く ↗
+    </a>
+  </div>
+</section>
+
+<!-- 4: Why Now -->
 <section class="slide center">
   <div>
     <h1 style="font-size: 56px; margin-bottom: 0.2em;">AI が、考える時代。</h1>
