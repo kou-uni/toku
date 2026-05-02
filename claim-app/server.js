@@ -1,89 +1,98 @@
 // Tsumu claim webpage server.
 //
-// Serves a static page at /claim/:id that lets a recipient claim a gift
-// escrow on Sui. The page calls /api/escrow/:id to display gift details,
-// then /api/claim to perform the on-chain claim via the agent's keypair.
+// Pure-SDK rewrite of the previous shell-out version, so this runs both
+// locally (node server.js, port 3000) and on Vercel's Node serverless
+// runtime (via api/index.js wrapping this app).
 //
-// Mock zkLogin: in MVP we generate a fresh fake recipient address per
-// session. In production this address comes from a Google JWT + zkLogin
-// proof. The Move contract's claim_to function accepts an arbitrary
-// recipient, gated by the claim code, so the demo flow is faithful.
+// Flow unchanged: a recipient opens /claim/:id?code=... in their browser,
+// the page reads the escrow via /api/escrow/:id, and posting /api/claim
+// performs the on-chain release using the agent's keypair.
 
 import express from "express";
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
 import crypto from "node:crypto";
 import path from "node:path";
+import { promises as fs } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { getEscrow, claimGift } from "./lib/tsumu.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const exec = promisify(execFile);
-
-const PORT = process.env.PORT || 3000;
-const SUI_BIN = process.env.SUI_BIN || `${process.env.HOME}/tools/sui-testnet-v1.71.0/sui`;
-const TOOLS_DIR = process.env.TOOLS_DIR ||
-  path.join(__dirname, "..", "openclaw", "skills", "tsumu", "tools");
 
 // Discord onboarding URLs — set via env when OpenClaw + bot are live.
-// These mock URLs let us validate the post-claim CTA story end-to-end.
-const DISCORD_BOT_DM = process.env.DISCORD_BOT_DM || "https://discord.com/users/1499905975220568186";
-const DISCORD_SERVER_INVITE = process.env.DISCORD_SERVER_INVITE || "https://discord.gg/tsumu-coming-soon";
+const DISCORD_BOT_DM =
+  process.env.DISCORD_BOT_DM ||
+  "https://discord.com/users/1499905975220568186";
+const DISCORD_SERVER_INVITE =
+  process.env.DISCORD_SERVER_INVITE || "https://discord.gg/tsumu-coming-soon";
 
-// Where the OpenClaw-side identity registry lives (chat-app for now).
-// On claim success we ask it for a one-time onboard_token; the user shows
-// it to the Tsumu bot in their first DM, which calls identity_bind.
-const TSUMU_CHAT_API = process.env.TSUMU_CHAT_API || "http://localhost:3100";
+// Public-facing chat-app URL (the post-claim Tide CTA links here).
+const CHAT_APP_URL = process.env.CHAT_APP_URL || "http://localhost:3100";
+
+// Server-to-server onboard-token endpoint on the chat-app.
+const TSUMU_CHAT_API = process.env.TSUMU_CHAT_API || CHAT_APP_URL;
 
 const app = express();
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
 
-// Serve the claim page (HTML) for any /claim/:id?code=...
-app.get("/claim/:id", (_req, res) => {
-  res.sendFile(path.join(__dirname, "public", "claim.html"));
-});
+// Static assets (style.css, etc.) — claim.html is served via the
+// /claim/:id handler so we can do a CHAT_APP_URL substitution.
+app.use(
+  express.static(path.join(__dirname, "public"), {
+    index: false,
+    extensions: ["html"],
+  })
+);
 
-// Fetch escrow details from Sui via the CLI.
-app.get("/api/escrow/:id", async (req, res) => {
+// Cache the claim.html in memory after the first read so repeated claims
+// don't hit disk under serverless cold starts.
+let _claimHtmlCache = null;
+async function loadClaimHtml() {
+  if (_claimHtmlCache) return _claimHtmlCache;
+  const raw = await fs.readFile(
+    path.join(__dirname, "public", "claim.html"),
+    "utf-8"
+  );
+  _claimHtmlCache = raw.replace(/http:\/\/localhost:3100/g, CHAT_APP_URL);
+  return _claimHtmlCache;
+}
+
+app.get("/claim/:id", async (_req, res) => {
   try {
-    const { stdout } = await exec(SUI_BIN, [
-      "client", "object", req.params.id, "--json"
-    ], { maxBuffer: 4 * 1024 * 1024 });
-    const obj = JSON.parse(stdout);
-
-    // Sui CLI returns fields directly under `content` (not `content.fields`).
-    const fields = obj?.content ?? {};
-    const senderAddr = fields.sender ?? "";
-    const note = fields.note ?? "";
-    const claimed = !!fields.claimed;
-    const amountAtomic = Number(fields.amount ?? 0);
-    const createdAt = Number(fields.created_at_ms ?? 0);
-
-    res.json({
-      escrow_id: req.params.id,
-      sender: senderAddr,
-      sender_short: senderAddr ? `${senderAddr.slice(0, 6)}…${senderAddr.slice(-4)}` : "",
-      note,
-      amount_human: amountAtomic / 1e9,
-      claimed,
-      created_at_ms: createdAt,
-      explorer_url: `https://suiscan.xyz/testnet/object/${req.params.id}`,
-    });
-  } catch (e) {
-    console.error("escrow fetch failed:", e.message);
-    res.status(404).json({ error: "escrow_not_found", detail: e.message });
+    res.type("html").send(await loadClaimHtml());
+  } catch (err) {
+    console.error("loadClaimHtml failed:", err.message);
+    res.status(500).send("claim page unavailable");
   }
 });
 
-// Generate a deterministic-ish "user wallet" address. In production this
-// comes from the user's Google JWT via zkLogin. For demo we synthesize a
-// fresh, valid-looking 32-byte hex address per session.
+// Read escrow detail via SDK (was: `sui client object ... --json`).
+app.get("/api/escrow/:id", async (req, res) => {
+  try {
+    const e = await getEscrow(req.params.id);
+    res.json({
+      escrow_id: req.params.id,
+      sender: e.sender,
+      sender_short: e.sender
+        ? `${e.sender.slice(0, 6)}…${e.sender.slice(-4)}`
+        : "",
+      note: e.note,
+      amount_human: e.amount_atomic / 1e9,
+      claimed: e.claimed,
+      created_at_ms: e.created_at_ms,
+      explorer_url: `https://suiscan.xyz/testnet/object/${req.params.id}`,
+    });
+  } catch (err) {
+    console.error("escrow fetch failed:", err.message);
+    res.status(404).json({ error: "escrow_not_found", detail: err.message });
+  }
+});
+
+// Mock zkLogin: synthesize a fresh, valid-looking 32-byte hex address per
+// claim. In production this comes from a Google JWT + zkLogin proof.
 function mockZkLoginAddress() {
   return "0x" + crypto.randomBytes(32).toString("hex");
 }
 
-// Perform the on-chain claim. The agent (our Sui CLI keypair) signs the
-// transaction; the TOKU lands at the recipient address.
+// Perform the on-chain claim via SDK (was: tsumu_gift_claim_to.sh).
 app.post("/api/claim", async (req, res) => {
   const { escrow_id, code } = req.body || {};
   if (!escrow_id || !code) {
@@ -91,20 +100,13 @@ app.post("/api/claim", async (req, res) => {
   }
 
   const recipient = mockZkLoginAddress();
-  const tool = path.join(TOOLS_DIR, "tsumu_gift_claim_to.sh");
 
   try {
-    const { stdout } = await exec(tool, [escrow_id, code, recipient], {
-      maxBuffer: 4 * 1024 * 1024,
-      env: { ...process.env, PATH: process.env.PATH + ":" + path.dirname(SUI_BIN) },
-    });
-    // Tool emits a single JSON line at the end (last line of stdout).
-    const lastLine = stdout.trim().split("\n").pop();
-    const result = JSON.parse(lastLine);
+    const result = await claimGift(escrow_id, code, recipient);
+    const totalToku = result.amount_human + 1; // +1 first-receive bonus
 
-    // Best-effort: fetch a one-time onboard token so the user can prove
-    // ownership of `recipient` to the Tsumu bot in their first DM. If the
-    // chat-app isn't running we just skip — the UI degrades to coming-soon.
+    // Best-effort: ask chat-app for an onboard token so the recipient can
+    // prove ownership of `recipient` to the Tsumu Discord bot. Non-fatal.
     let onboard_token = null;
     try {
       const r = await fetch(`${TSUMU_CHAT_API}/api/identity/onboard-token`, {
@@ -119,24 +121,29 @@ app.post("/api/claim", async (req, res) => {
     }
 
     res.json({
-      ...result,
+      claim_tx: result.claim_tx,
       recipient,
+      sender: result.sender,
+      amount_human: result.amount_human,
+      sender_pay_forward_bonus_toku: 1,
+      recipient_first_receive_bonus_toku: 1,
+      message_for_recipient: `受け取りました。+${totalToku.toFixed(
+        1
+      )} TOKU。\n\nこれが、あなたの最初の徳です。`,
       explorer_recipient_url: `https://suiscan.xyz/testnet/account/${recipient}`,
       explorer_tx_url: `https://suiscan.xyz/testnet/tx/${result.claim_tx}`,
       discord_invite: DISCORD_BOT_DM,
       server_invite: DISCORD_SERVER_INVITE,
       onboard_token,
     });
-  } catch (e) {
-    console.error("claim failed:", e.message);
-    res.status(500).json({ error: "claim_failed", detail: e.message });
+  } catch (err) {
+    console.error("claim failed:", err.message);
+    res.status(500).json({ error: "claim_failed", detail: err.message });
   }
 });
 
-// Health
 app.get("/healthz", (_req, res) => res.json({ ok: true }));
 
-// Home
 app.get("/", (_req, res) => {
   res.send(`<!doctype html>
 <html lang="ja"><head><meta charset="utf-8"><title>Tsumu</title>
@@ -148,6 +155,13 @@ app.get("/", (_req, res) => {
 </body></html>`);
 });
 
-app.listen(PORT, () => {
-  console.log(`tsumu claim app listening on http://localhost:${PORT}`);
-});
+export default app;
+
+// Local dev: only listen when this file is the entry point (not when
+// imported by api/index.js under Vercel).
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`tsumu claim app listening on http://localhost:${PORT}`);
+  });
+}

@@ -10,6 +10,7 @@
     "start": "node server.js"
   },
   "dependencies": {
+    "@mysten/sui": "^1.45.2",
     "express": "^4.21.2"
   }
 }
