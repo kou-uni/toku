@@ -46,15 +46,15 @@ style: |
 
 <div style="border-left: 2px solid #b89657; padding: 24px 28px; background: #f4f2eb;">
   <p class="muted" style="font-size: 15px; margin: 0 0 14px; letter-spacing: 0.1em;">この 2 分でお見せするのは</p>
-  <p style="font-size: 30px; font-weight: 300; margin: 0 0 10px; letter-spacing: 0.06em;">あかり、21歳</p>
+  <p style="font-size: 30px; font-weight: 300; margin: 0 0 10px; letter-spacing: 0.06em;">ペルソナ</p>
   <p class="muted" style="font-size: 15px; line-height: 1.8; margin: 0 0 22px;">
-    大学 3 年・現代美術専攻<br>
+    21 歳・大学 3 年・現代美術専攻<br>
     SNS をやめたばかり<br>
     瞑想アプリは挫折<br>
     クリプトは、知らない
   </p>
   <p style="font-size: 16px; color: #555; margin: 0; line-height: 1.7;">
-    — 彼女が Tsumu と過ごす<br>
+    — Tsumu と過ごす<br>
     　<strong style="color: #b89657;">30 日</strong>の物語
   </p>
 </div>
@@ -102,7 +102,7 @@ style: |
 
 <br>
 
-<span class="muted">— 「ウォレット作りました」とは、絶対に言われない。</span>
+<span class="muted">— ウォレットを意識しないままに、Sui ウォレットが伝播していく。</span>
 
 <!--
 [0:35-0:55]
