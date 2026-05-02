@@ -54,3 +54,6 @@ slides/*.pptx
 slides/.~lock*
 slides/*.html
 slides/*.pdf
+
+# macOS .webloc launchers — contain hardcoded absolute paths
+*.webloc
