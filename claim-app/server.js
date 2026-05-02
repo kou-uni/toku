@@ -24,6 +24,11 @@ const SUI_BIN = process.env.SUI_BIN || `${process.env.HOME}/tools/sui-testnet-v1
 const TOOLS_DIR = process.env.TOOLS_DIR ||
   path.join(__dirname, "..", "openclaw", "skills", "tsumu", "tools");
 
+// Discord onboarding URLs — set via env when OpenClaw + bot are live.
+// These mock URLs let us validate the post-claim CTA story end-to-end.
+const DISCORD_BOT_DM = process.env.DISCORD_BOT_DM || "https://discord.com/users/1499905975220568186";
+const DISCORD_SERVER_INVITE = process.env.DISCORD_SERVER_INVITE || "https://discord.gg/tsumu-coming-soon";
+
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
@@ -96,6 +101,8 @@ app.post("/api/claim", async (req, res) => {
       recipient,
       explorer_recipient_url: `https://suiscan.xyz/testnet/account/${recipient}`,
       explorer_tx_url: `https://suiscan.xyz/testnet/tx/${result.claim_tx}`,
+      discord_invite: DISCORD_BOT_DM,
+      server_invite: DISCORD_SERVER_INVITE,
     });
   } catch (e) {
     console.error("claim failed:", e.message);

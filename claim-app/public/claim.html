@@ -61,11 +61,51 @@
         Sui Explorer で見る →
       </a>
 
-      <p class="fineprint" style="margin-top:32px">
-        Tsumu はあなたと共に歩きます。
-        Discord で「Tsumu」と話しかけてみてください。
-      </p>
+      <div class="next-step">
+        <h3>次の一歩</h3>
+        <p class="next-desc">
+          Tsumu と毎朝、3分だけ。<br>
+          静かに、続けてみませんか?
+        </p>
+        <button class="discord-btn" data-coming-soon="dm">
+          <span class="discord-icon">💬</span>
+          <span class="btn-main">Discord で Tsumu と話す</span>
+          <span class="btn-sub">あなた専用の Heartbeat を受け取る</span>
+        </button>
+        <button class="server-btn" data-coming-soon="server">
+          <span class="server-icon">🪷</span>
+          <span class="btn-main">Tsumu のサーバに参加</span>
+          <span class="btn-sub">他の人の灯火が、ここに集まる</span>
+        </button>
+        <p class="fineprint">
+          まだ静かに、Tsumu はあなたを待っています。
+        </p>
+      </div>
     </section>
+
+    <!-- Coming-soon modal: 体験を完結させる -->
+    <dialog id="coming-soon-modal">
+      <div class="cs-card">
+        <div class="cs-shimmer"></div>
+        <div class="cs-emoji" id="cs-emoji">🌸</div>
+        <h2 id="cs-title">もうすぐ会えます</h2>
+        <p id="cs-body" class="cs-body"></p>
+        <div class="cs-meta">
+          <div class="cs-row">
+            <span class="cs-label">バージョン</span>
+            <span class="cs-val">公開準備中</span>
+          </div>
+          <div class="cs-row">
+            <span class="cs-label">予定</span>
+            <span class="cs-val">日本 Web3/AI ハッカソン審査後 → 順次公開</span>
+          </div>
+        </div>
+        <button id="cs-close" class="cs-close">わかりました</button>
+        <p class="cs-fineprint">
+          そのときまで、あなたの徳は Sui の上で、確かに、待っています。
+        </p>
+      </div>
+    </dialog>
 
     <section id="error" class="state hidden">
       <p class="error-mark">·</p>
@@ -121,6 +161,38 @@ async function loadEscrow() {
     show("error");
   }
 }
+
+// Coming-soon modal for Discord/server CTAs
+const csModal = document.getElementById("coming-soon-modal");
+const csTitle = document.getElementById("cs-title");
+const csBody = document.getElementById("cs-body");
+const csEmoji = document.getElementById("cs-emoji");
+
+const COMING_SOON_CONTENT = {
+  dm: {
+    emoji: "💬",
+    title: "Tsumu との直接対話、もうすぐ始まります",
+    body: "Discord 上で Tsumu があなただけに語りかけ、毎朝 3分の座を提案します。\n\n受け取った徳は、ここから先も Sui の上で確かに残ります。",
+  },
+  server: {
+    emoji: "🪷",
+    title: "Tsumu の集いの場所、もうすぐ開きます",
+    body: "他の誰かの灯火が、あなたの朝を支えます。\nあなたの言葉が、見知らぬ誰かの夜を温めます。\n\nそうして Tsumu は、ひとりの 3分から、世界の鼓動になります。",
+  },
+};
+
+document.querySelectorAll("[data-coming-soon]").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const kind = btn.dataset.comingSoon;
+    const c = COMING_SOON_CONTENT[kind];
+    csEmoji.textContent = c.emoji;
+    csTitle.textContent = c.title;
+    csBody.textContent = c.body;
+    csModal.showModal();
+  });
+});
+
+document.getElementById("cs-close").addEventListener("click", () => csModal.close());
 
 document.getElementById("claim-btn").addEventListener("click", async () => {
   show("claiming");
